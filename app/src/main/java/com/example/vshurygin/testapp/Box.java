@@ -15,23 +15,28 @@ public class Box
 
     public Box ()
     {
-         new Box (0,0,0,0,"",0);
+        this(0,0,0,0,"",0);
     }
     public Box (int _x, int _y)
     {
-        new Box (_x,_y,0,0,"",0);
+        this(_x,_y,0,0,"",0);
     }
     public Box (int _x, int _y, int _width, int _height)
     {
-        new Box (_x,_y,_width,_height,"",0);
+        this(_x,_y,_width,_height,"",0);
     }
     public Box (int _x, int _y, int _width, int _height, String _color)
     {
-        new Box (_x,_y,_width,_height,_color,0);
+        this(_x,_y,_width,_height,_color,0);
     }
     public Box (int _x, int _y, int _width, int _height, String _color, int _number)
     {
-        new Box (_x,_y,_width,_height,_color,_number);
+        mX = _x;
+        mY = _y;
+        mWidth = _width;
+        mHeight = _height;
+        mColor = _color;
+        mNumber = _number;
     }
 
     public void setY(int _value)
