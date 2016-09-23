@@ -1,5 +1,7 @@
 package com.example.vshurygin.testapp;
 
+import java.util.Objects;
+
 /**
  * Created by vshurygin on 21.09.2016.
  */
@@ -87,6 +89,38 @@ public class Box
     public int getNumber()
     {
         return mNumber;
+    }
+
+    @Override
+    public boolean equals(Object _object)
+    {
+        if (getClass() != _object.getClass())
+        {
+            return false;
+        }
+
+        Box other = (Box)_object;
+        if((mX != other.mX)||(mY != other.mY))
+        {
+            return false;
+        }
+
+        if ((mWidth != other.mWidth)||(mHeight != other.mHeight))
+        {
+            return false;
+        }
+
+        if (mColor != other.mColor)
+        {
+            return false;
+        }
+
+        if (mNumber != other.mNumber)
+        {
+            return false;
+        }
+
+        return true;
     }
 
 }
