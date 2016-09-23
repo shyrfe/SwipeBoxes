@@ -1,5 +1,7 @@
 package com.example.vshurygin.testapp;
 
+import android.graphics.Color;
+
 import java.util.Objects;
 
 /**
@@ -12,26 +14,26 @@ public class Box
     private int mX;
     private int mWidth;
     private int mHeight;
-    private String mColor;
+    private int mColor;
     private int mNumber;
 
     public Box ()
     {
-        this(0,0,0,0,"",0);
+        this(0,0,0,0,Color.BLACK,0);
     }
     public Box (int _x, int _y)
     {
-        this(_x,_y,0,0,"",0);
+        this(_x,_y,0,0,Color.BLACK,0);
     }
     public Box (int _x, int _y, int _width, int _height)
     {
-        this(_x,_y,_width,_height,"",0);
+        this(_x,_y,_width,_height, Color.BLACK,0);
     }
-    public Box (int _x, int _y, int _width, int _height, String _color)
+    public Box (int _x, int _y, int _width, int _height, int _color)
     {
         this(_x,_y,_width,_height,_color,0);
     }
-    public Box (int _x, int _y, int _width, int _height, String _color, int _number)
+    public Box (int _x, int _y, int _width, int _height, int _color, int _number)
     {
         mX = _x;
         mY = _y;
@@ -57,7 +59,7 @@ public class Box
     {
         mHeight = _value;
     }
-    public void setColor(String _color)
+    public void setColor(int _color)
     {
         mColor = _color;
     }
@@ -82,7 +84,7 @@ public class Box
     {
         return mHeight;
     }
-    public String getColor()
+    public int getColor()
     {
         return mColor;
     }
