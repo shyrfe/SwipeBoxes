@@ -93,14 +93,11 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-
 //---------------------------------------------------------------------------------------------------------
     class DrawThread extends Thread
     {
         public boolean poolChange = false;
         public CopyOnWriteArrayList<Box> mBoxPool = new CopyOnWriteArrayList<>();
-
-
 
         private final int BACKGROUND_COLOR = Color.WHITE;
 
@@ -108,7 +105,6 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
         private SurfaceHolder mSurfaceHolder;
         private boolean isRun = false;
         private CopyOnWriteArrayList<Box> mOutsideBoxPool;
-
 
 
         public DrawThread(SurfaceHolder _surfaceHolder, Resources _resources,CopyOnWriteArrayList _boxPool)
@@ -134,7 +130,6 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                 e.printStackTrace();
             }
         }
-
 
         @Override
         public void run()
@@ -164,7 +159,7 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                         }
                         catch (Exception e)
                         {
-                            Log.d("DrawBoxes","StackIsEmpty");
+                            Log.d("DrawBoxes","BoxPoolIsEmpty");
                             e.printStackTrace();
                         }
                         finally
@@ -177,10 +172,10 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                     {
                         canvas.drawColor(BACKGROUND_COLOR);
                         paint.setStrokeWidth(1);
-
                         for (int i = 0; i < mBoxPool.size(); i++)
                         {
-                            boxParse(canvas,paint,mBoxPool.get(i));
+                            //parseAndDrawBox(canvas,paint,mBoxPool.get(i));
+                            canvas.drawBitmap(parseBox(mBoxPool.get(i)),mBoxPool.get(i).getX(),mBoxPool.get(i).getY(),null);
                         }
                     }
                 }
@@ -194,7 +189,47 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
             }
         }
 
-        private void boxParse(Canvas _canvas, Paint _paint, Box _box)
+        private Bitmap parseBox (Box _box)
+        {
+            int x1 = _box.getX();
+            int y1 = _box.getY();
+            int x2 = _box.getX() + _box.getWidth();
+            int y2 = _box.getY() + _box.getHeight();
+
+            int boxWidth = _box.getWidth();
+            int boxHeight = _box.getHeight();
+
+            Bitmap bm = Bitmap.createBitmap(boxWidth,boxHeight,Bitmap.Config.ARGB_8888);
+            Canvas CanvasBoxPattern = new Canvas(bm);
+
+            Paint _paint = new Paint();
+            Path pathBox = new Path();
+            pathBox.reset();
+
+            _paint.setStyle(Paint.Style.FILL);
+            _paint.setColor(_box.getColor());
+
+            pathBox.addRect(0,0,boxWidth,boxHeight,Path.Direction.CW);
+            CanvasBoxPattern.drawPath(pathBox,_paint);
+
+            _paint.setStyle(Paint.Style.STROKE);
+            _paint.setColor(Color.BLACK);
+            _paint.setStrokeWidth(5);
+
+            Path rectPath = new Path();
+            rectPath.addRect(3,3,boxWidth-3,boxHeight-3,Path.Direction.CW);
+            CanvasBoxPattern.drawPath(rectPath,_paint);
+
+            _paint.setStrokeWidth(3);
+            _paint.setStyle(Paint.Style.FILL);
+            _paint.setTextSize(50);
+            _paint.setTypeface(Typeface.MONOSPACE);
+
+            CanvasBoxPattern.drawText(String.valueOf(_box.getNumber()),_box.getWidth()/2,_box.getHeight()/2,_paint);
+
+            return bm;
+        }
+        private void parseAndDrawBox(Canvas _canvas, Paint _paint, Box _box)
         {
 
             int x1 = _box.getX();
@@ -309,8 +344,6 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
             /*Path rectPath = new Path();
             rectPath.addRect(x1+3,y1+3,x2-3,y2-3,Path.Direction.CW);
             _canvas.drawPath(rectPath,_paint);*/
-
-
 
             _paint.setStrokeWidth(3);
             _paint.setStyle(Paint.Style.FILL);

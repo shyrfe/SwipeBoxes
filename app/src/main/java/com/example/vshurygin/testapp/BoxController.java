@@ -21,6 +21,11 @@ public class BoxController
     private int ScreenWidth = 0;
     private int ScreenHeight = 0;
 
+    private int mMinX;
+    private int mMaxX;
+    private int mMinY;
+    private int mMaxY;
+
     private final int BOX_WIDTH_NUMBER = 3;
     private final int BOX_HEIGHT_NUMBER = 3;
 
@@ -36,8 +41,10 @@ public class BoxController
             @Override
             public void run()
             {
-                while ((mDrawBoxes.ScreenWidth == 0) && (mDrawBoxes.ScreenWidth == 0))
-                {}
+                while ((mDrawBoxes.ScreenWidth == 0) && (mDrawBoxes.ScreenHeight == 0))
+                {
+
+                }
                 ScreenWidth = mDrawBoxes.ScreenWidth;
                 ScreenHeight = mDrawBoxes.ScreenHeight;
                 boxsInit();
@@ -51,17 +58,65 @@ public class BoxController
         switch (_event.getAction())
         {
             case MotionEvent.ACTION_MOVE:
-                Log.d("Input","Down");
+               /* Log.d("Input","Down");
                 Log.d("Input","X: " + _event.getX());
                 Log.d("Input","Y: " + _event.getY());
                 BoxPool.get(1).setX(Math.abs((int)_event.getX()));
-                BoxPool.get(1).setY(Math.abs((int)_event.getY()));
+                BoxPool.get(1).setY(Math.abs((int)_event.getY()));*/
+                /*if (mi == 0 )
+                {
+                    for (int i = 0; i < BoxPool.size(); i++)
+                    {
+                        BoxPool.get(i).setX(BoxPool.get(i).getX() + 100);
+                    }
+                    mi = 1;
+                    Log.d("INPUT","mi = 1");
+                }
+                else if (mi == 1)
+                {
+                    for (int i = 0; i < BoxPool.size(); i++)
+                    {
+                        BoxPool.get(i).setX(BoxPool.get(i).getX() - 100);
+                    }
+                    mi = 0;
+                    Log.d("INPUT","mi = 0");
+                }*/
+                for (int i = 0; i < BoxPool.size(); i++)
+                {
+                    int x = BoxPool.get(i).getX();
+                    int y = BoxPool.get(i).getY();
+
+                    //Log.d("Input","" + mMinX + " " + mMinY + " " + mMaxX + " " + mMaxY);
+                    for (int j = 0; j < 100; j++)
+                    {
+                        if (x < mMaxX && y == mMinY)
+                        {
+                            BoxPool.get(i).setX( BoxPool.get(i).getX() + 1);
+                        }
+                        else if (x > mMinX && y == mMaxY)
+                        {
+                            BoxPool.get(i).setX( BoxPool.get(i).getX() - 1);
+                        }
+                        else if (x == mMaxX && y < mMaxY)
+                        {
+                            BoxPool.get(i).setY( BoxPool.get(i).getY() + 1);
+                        }
+                        else if (x == mMinX && y > mMinY)
+                        {
+                            BoxPool.get(i).setY( BoxPool.get(i).getY() - 1);
+                        }
+
+                        x = BoxPool.get(i).getX();
+                        y = BoxPool.get(i).getY();
+                    }
+
+                }
+
                 break;
             case MotionEvent.ACTION_UP:
                 Log.d("Input","Up");
                 break;
             case MotionEvent.ACTION_SCROLL:
-
                 if (mi < 300)
                 {
                     mi++;
@@ -71,7 +126,7 @@ public class BoxController
                 {
                     mi = 0;
                 }
-
+                break;
         }
     }
 
@@ -83,6 +138,7 @@ public class BoxController
             mDrawBoxes.LocalDrawThread.poolChange = true;
         }
     }
+
     private void boxsInit()
     {
         final int PADDING = 4;
@@ -108,6 +164,17 @@ public class BoxController
         {
             for (int j = 0; j < BOX_WIDTH_NUMBER; j++)
             {
+                if (i == 0 && j == 0)
+                {
+                    mMinX = j*(box_width+padding_step_w) + (padding_step_w + first_width_margin);
+                    mMinY = i*(box_height+padding_step_h) + (padding_step_h+first_height_margin);
+                }
+                if (i == BOX_HEIGHT_NUMBER - 1 && j == BOX_WIDTH_NUMBER - 1)
+                {
+                    mMaxX = j*(box_width+padding_step_w) + (padding_step_w + first_width_margin);
+                    mMaxY = i*(box_height+padding_step_h) + (padding_step_h+first_height_margin);
+                }
+
                 if(i == 1 && j == 1)
                 {
                     BoxPool.add(new Box (
