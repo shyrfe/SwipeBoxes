@@ -174,8 +174,19 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                         paint.setStrokeWidth(1);
                         for (int i = 0; i < mBoxPool.size(); i++)
                         {
+                            try
+                            {
+                                if ((mBoxPool.get(i).getWidth() != 0) && (mBoxPool.get(i).getHeight() != 0))
+                                {
+                                    canvas.drawBitmap(parseBox(mBoxPool.get(i)),mBoxPool.get(i).getX(),mBoxPool.get(i).getY(),null);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
                             //parseAndDrawBox(canvas,paint,mBoxPool.get(i));
-                            canvas.drawBitmap(parseBox(mBoxPool.get(i)),mBoxPool.get(i).getX(),mBoxPool.get(i).getY(),null);
+
                         }
                     }
                 }
