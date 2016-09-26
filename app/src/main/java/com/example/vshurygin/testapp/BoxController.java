@@ -83,7 +83,7 @@ public class BoxController
 
             case MotionEvent.ACTION_UP:
 
-                Log.d("Input","Up");
+                //Log.d("Input","Up");
                 if ((mEndMotionY - mStartMotionY) < (mEndMotionX - mStartMotionX))
                 {
                     if ((mEndMotionX - mStartMotionX) > 0)
@@ -111,14 +111,14 @@ public class BoxController
 
             case MotionEvent.ACTION_DOWN:
 
-                Log.d("Input","Down");
+                //Log.d("Input","Down");
                 mStartMotionX = _event.getX();
                 mStartMotionY = _event.getY();
                 break;
 
             case MotionEvent.ACTION_MOVE:
 
-                Log.d("Input","Move");
+                //Log.d("Input","Move");
                 mEndMotionX = _event.getX();
                 mEndMotionY = _event.getY();
 
@@ -303,22 +303,56 @@ public class BoxController
                 {
                     if ( Math.abs(_boxArray.get(i).getY() - _coordMass[(j*2)+1]) < dy )
                     {
-                        dy = Math.abs(_boxArray.get(i).getY() - _coordMass[(j*2)+1]);
-                        y = _coordMass[(j*2)+1];
+                            dy = Math.abs(_boxArray.get(i).getY() - _coordMass[(j*2)+1]);
+                            y = _coordMass[(j*2)+1];
                     }
                 }
                 else if ((_boxArray.get(i).getY() == mMinY) || (_boxArray.get(i).getY() == mMaxY))
                 {
                     if ( Math.abs(_boxArray.get(i).getX() - _coordMass[j*2]) < dx )
                     {
-                        dx = Math.abs(_boxArray.get(i).getX() - _coordMass[j*2]);
-                        x = _coordMass[j*2];
+                            dx = Math.abs(_boxArray.get(i).getX() - _coordMass[j * 2]);
+                            x = _coordMass[j * 2];
                     }
                 }
             }
             _boxArray.get(i).setX(x);
             _boxArray.get(i).setY(y);
         }
+    }
+    private boolean checkYCoord (CopyOnWriteArrayList<Box> _boxArray,int _coordY)
+    {
+
+            for (int n = 0; n < _boxArray.size(); n++)
+            {
+                if (_boxArray.get(n).getY() == _coordY)
+                {
+                    return true;
+                }
+            }
+        return false;
+    }
+    private boolean checkXCoord (CopyOnWriteArrayList<Box> _boxArray,int _coordX)
+    {
+        for (int n = 0; n < _boxArray.size(); n++)
+        {
+            if (_boxArray.get(n).getX() == _coordX)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    private boolean checkXYCoord (CopyOnWriteArrayList<Box> _boxArray, int _coordX, int _coordY)
+    {
+        for (int n = 0; n < _boxArray.size(); n++)
+        {
+            if (_boxArray.get(n).getX() == _coordX && _boxArray.get(n).getY() == _coordY)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
