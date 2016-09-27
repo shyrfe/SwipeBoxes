@@ -26,6 +26,7 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
     public DrawThread LocalDrawThread;
     public BoxController LocalBoxController;
+    public Context LocalContext;
 
     public int ScreenWidth = 0;
     public int ScreenHeight = 0;
@@ -35,6 +36,7 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
     DrawBoxes(Context _context)
     {
         super(_context);
+        LocalContext = _context;
         getHolder().addCallback(this);
     }
 
@@ -98,6 +100,7 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
     {
         public boolean poolChange = false;
         public CopyOnWriteArrayList<Box> mBoxPool = new CopyOnWriteArrayList<>();
+
 
         private final int BACKGROUND_COLOR = Color.WHITE;
 

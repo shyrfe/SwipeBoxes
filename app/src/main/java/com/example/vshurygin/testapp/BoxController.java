@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -23,8 +26,12 @@ public class BoxController
     private int[] mReferenceCoord;
 
     private DrawBoxes mDrawBoxes;
+    private BoxCellController mBoxCellController;
     private int ScreenWidth = 0;
     private int ScreenHeight = 0;
+    private GestureDetector mGD;
+    private ScaleGestureDetector mSGD;
+
 
     private int mMinX;
     private int mMaxX;
@@ -38,6 +45,8 @@ public class BoxController
     BoxController(DrawBoxes _drawBoxes)
     {
         mDrawBoxes = _drawBoxes;
+        mSGD = new ScaleGestureDetector(_drawBoxes.LocalContext,new ScaleListener());
+        mGD = new GestureDetector(_drawBoxes.LocalContext, new GestureListener());
         mDrawBoxes.initBoxPool(BoxPool);
         mDrawBoxes.LocalBoxController = this;
 
@@ -66,7 +75,9 @@ public class BoxController
 
     public void input(MotionEvent _event)
     {
-        switch (_event.getAction())
+        mGD.onTouchEvent(_event);
+        mSGD.onTouchEvent(_event);
+       /* switch (_event.getAction())
         {
             case MotionEvent.ACTION_CANCEL:
 
@@ -106,7 +117,8 @@ public class BoxController
                         slideCounterclockwise();
                     }
                 }
-                syncPositionWithReferenceCoord(BoxPool,mReferenceCoord);
+
+                syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
                 break;
 
             case MotionEvent.ACTION_DOWN:
@@ -114,6 +126,8 @@ public class BoxController
                 //Log.d("Input","Down");
                 mStartMotionX = _event.getX();
                 mStartMotionY = _event.getY();
+
+                mBoxCellController.refresh();
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -145,7 +159,7 @@ public class BoxController
                     }
                 }
                 break;
-        }
+        }*/
     }
 
     private void slideClockwise()
@@ -155,7 +169,7 @@ public class BoxController
             int x = BoxPool.get(i).getX();
             int y = BoxPool.get(i).getY();
 
-            for (int j = 0; j < 30; j++)
+            for (int j = 0; j < 10; j++)
             {
                 if (x < mMaxX && y == mMinY)
                 {
@@ -279,80 +293,226 @@ public class BoxController
                 mReferenceCoord[((i*BOX_HEIGHT_NUMBER + j)*2) + 1] = i*(box_height+padding_step_h) + (padding_step_h+first_height_margin);
             }
         }
+        mBoxCellController = new BoxCellController(mReferenceCoord);
         poolChanged();
     }
 
-    private void syncPositionWithReferenceCoord(CopyOnWriteArrayList<Box> _boxArray, int[] _coordMass)
+    private void syncPositionWithReferenceCoord(CopyOnWriteArrayList<Box> _boxArray, BoxCellController _boxCellController)
     {
-        /*for (int i = 0; i <  (_coordMass.length/2); i++)
-        {
-            Log.d("ReferenceCoord","X: "+_coordMass[i*2]+" ");
-            Log.d("ReferenceCoord","Y: "+_coordMass[i*2+1]+" ");
-        }*/
-
-        for (int i = 0; i < _boxArray.size(); i++)
-        {
             int dx = Integer.MAX_VALUE;
             int dy = Integer.MAX_VALUE;
-            int x = _boxArray.get(i).getX();
-            int y = _boxArray.get(i).getY();
+            int x = _boxArray.get(0).getX();
+            int y = _boxArray.get(0).getY();
+            int cellNumber = 0;
 
-            for (int j = 0; j < (_coordMass.length/2); j++)
+            for (int j = 0; j < _boxCellController.BoxCellArray.size(); j++)
             {
-                if ((_boxArray.get(i).getX() == mMinX) || (_boxArray.get(i).getX() == mMaxX))
+                if ((_boxArray.get(0).getX() == mMinX) || (_boxArray.get(0).getX() == mMaxX))
                 {
-                    if ( Math.abs(_boxArray.get(i).getY() - _coordMass[(j*2)+1]) < dy )
+                    if ( Math.abs(_boxArray.get(0).getY() - _boxCellController.BoxCellArray.get(j).getY()) < dy )
                     {
-                            dy = Math.abs(_boxArray.get(i).getY() - _coordMass[(j*2)+1]);
-                            y = _coordMass[(j*2)+1];
+                            dy = Math.abs(_boxArray.get(0).getY() - _boxCellController.BoxCellArray.get(j).getY());
+                            y = _boxCellController.BoxCellArray.get(j).getY();
+                            cellNumber = j;
                     }
                 }
-                else if ((_boxArray.get(i).getY() == mMinY) || (_boxArray.get(i).getY() == mMaxY))
+                else if ((_boxArray.get(0).getY() == mMinY) || (_boxArray.get(0).getY() == mMaxY))
                 {
-                    if ( Math.abs(_boxArray.get(i).getX() - _coordMass[j*2]) < dx )
+                    if ( Math.abs(_boxArray.get(0).getX() - _boxCellController.BoxCellArray.get(j).getX()) < dx )
                     {
-                            dx = Math.abs(_boxArray.get(i).getX() - _coordMass[j * 2]);
-                            x = _coordMass[j * 2];
+                            dx = Math.abs(_boxArray.get(0).getX() - _boxCellController.BoxCellArray.get(j).getX());
+                            x = _boxCellController.BoxCellArray.get(j).getX();
+                            cellNumber = j;
                     }
                 }
             }
-            _boxArray.get(i).setX(x);
-            _boxArray.get(i).setY(y);
-        }
-    }
-    private boolean checkYCoord (CopyOnWriteArrayList<Box> _boxArray,int _coordY)
-    {
 
-            for (int n = 0; n < _boxArray.size(); n++)
+        BoxCellController.BoxCell localCell = _boxCellController.BoxCellArray.get(cellNumber);
+        for (int i = 0; i < _boxArray.size();i++)
+        {
+            if (i == 4)
+            {i++;}
+            _boxArray.get(i).setX(localCell.getX());
+            _boxArray.get(i).setY(localCell.getY());
+            localCell = localCell.NextCell;
+
+        }
+
+    }
+
+    public class BoxCellController
+    {
+        ArrayList<BoxCell> BoxCellArray = new ArrayList<>();
+
+        BoxCellController(int[] _coordMass)
+        {
+            for (int i = 0; i < (_coordMass.length/2); i++)
             {
-                if (_boxArray.get(n).getY() == _coordY)
+                if (i == 0)
                 {
-                    return true;
+                    //Log.d("ADD",""+_coordMass[i*2]+" " + _coordMass[i*2+1]);
+                    BoxCellArray.add(new BoxCell(_coordMass[i*2],_coordMass[i*2+1]));
+                }
+                else if ( i == (_coordMass.length/2)-1)
+                {
+                    BoxCellArray.add(new BoxCell(_coordMass[i*2],_coordMass[i*2+1]));
+                    BoxCellArray.get(i).NextCell = BoxCellArray.get(0);
+                    BoxCellArray.get(0).LastCell = BoxCellArray.get(i);
+                }
+                else
+                {
+                    BoxCellArray.add(new BoxCell(_coordMass[i*2],_coordMass[i*2+1],BoxCellArray.get(i-1)));
+                    BoxCellArray.get(i-1).NextCell = BoxCellArray.get(i);
                 }
             }
-        return false;
-    }
-    private boolean checkXCoord (CopyOnWriteArrayList<Box> _boxArray,int _coordX)
-    {
-        for (int n = 0; n < _boxArray.size(); n++)
+
+            BoxCellArray.get(3).NextCell = BoxCellArray.get(0);
+            BoxCellArray.get(0).LastCell = BoxCellArray.get(3);
+
+            BoxCellArray.get(6).NextCell = BoxCellArray.get(3);
+            BoxCellArray.get(3).LastCell = BoxCellArray.get(6);
+
+            BoxCellArray.get(7).NextCell = BoxCellArray.get(6);
+            BoxCellArray.get(6).LastCell = BoxCellArray.get(7);
+
+            BoxCellArray.get(8).NextCell = BoxCellArray.get(7);
+            BoxCellArray.get(7).LastCell = BoxCellArray.get(8);
+
+            BoxCellArray.get(5).NextCell = BoxCellArray.get(8);
+            BoxCellArray.get(8).LastCell = BoxCellArray.get(5);
+
+            BoxCellArray.get(2).NextCell = BoxCellArray.get(5);
+            BoxCellArray.get(5).LastCell = BoxCellArray.get(2);
+
+        }
+
+        public void refresh()
         {
-            if (_boxArray.get(n).getX() == _coordX)
+            for (int i = 0; i < BoxCellArray.size(); i++)
             {
-                return true;
+                BoxCellArray.get(i).isEmpty = true;
             }
         }
-        return false;
-    }
-    private boolean checkXYCoord (CopyOnWriteArrayList<Box> _boxArray, int _coordX, int _coordY)
-    {
-        for (int n = 0; n < _boxArray.size(); n++)
+
+        public class BoxCell
         {
-            if (_boxArray.get(n).getX() == _coordX && _boxArray.get(n).getY() == _coordY)
+            public BoxCell NextCell;
+            public BoxCell LastCell;
+
+            Boolean isEmpty = true;
+            private int mX;
+            private int mY;
+
+            BoxCell (int _x, int _y)
             {
-                return true;
+                this(_x,_y,null,null);
             }
+            BoxCell (int _x, int _y, BoxCell _lastCell)
+            {
+                this(_x,_y,_lastCell,null);
+            }
+            BoxCell(int _x, int _y, BoxCell _lastCell, BoxCell _nextCell)
+            {
+                mX = _x;
+                mY = _y;
+
+                LastCell = _lastCell;
+                NextCell = _nextCell;
+            }
+
+            public int getX()
+            {
+                return mX;
+            }
+            public int getY()
+            {
+                return mY;
+            }
+
         }
-        return false;
+    }
+
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener
+    {
+        @Override
+        public void onLongPress(MotionEvent _event)
+        {
+            Log.d("Gesture", "LongPress");
+        }
+        @Override
+        public boolean onScroll(MotionEvent _event1, MotionEvent _event2, float _distanceX, float _distanceY)
+        {
+
+            Log.d("Gesture", "Scroll");
+            //slideClockwise();
+            return true;
+        }
+        @Override
+        public boolean onFling (MotionEvent _event1, MotionEvent _event2, float _velocityX, float _velocityY)
+        {
+            Log.d("Gesture","Fling");
+            final int SWIPE_THRESHOLD = 100;
+            final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+            boolean result = false;
+            //Log.d("Fling","X: "+_velocityX + " Y: " + _velocityY);
+            try
+            {
+                float dX = _event2.getX() - _event1.getX();
+                float dY = _event2.getY() - _event1.getY();
+
+                if (Math.abs(dX) >  Math.abs(dY))
+                {
+                    if (Math.abs(dX) > SWIPE_THRESHOLD && Math.abs(_velocityX) > SWIPE_VELOCITY_THRESHOLD)
+                    {
+                        if (dX > 0)
+                        {
+                          //rigthtX
+                            slideClockwise();
+                            //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                        }
+                        else
+                        {
+                            slideCounterclockwise();
+                           // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                            //leftX
+                        }
+                        result = true;
+                    }
+                }
+                else if (Math.abs(dY) > SWIPE_THRESHOLD && Math.abs(_velocityY) > SWIPE_VELOCITY_THRESHOLD)
+                {
+                    if (dY > 0)
+                    {
+                        slideClockwise();
+                       // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                        //BottomY
+                    }
+                    else
+                    {
+                        slideCounterclockwise();
+                        //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+
+                        //TopY
+                    }
+                    result = true;
+                }
+            }
+
+            catch (Exception e)
+            {e.printStackTrace();}
+            return result;
+
+        }
+    }
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener
+    {
+        @Override
+        public boolean onScale(ScaleGestureDetector _detector)
+        {
+            Log.d("scale", "detect");
+            return true;
+        }
     }
 }
 
