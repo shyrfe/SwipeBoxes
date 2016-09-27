@@ -169,7 +169,6 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                         {
                             poolChange = false;
                         }
-
                     }
                     synchronized (mSurfaceHolder)
                     {
@@ -179,9 +178,13 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                         {
                             try
                             {
-                                if ((mBoxPool.get(i).getWidth() != 0) && (mBoxPool.get(i).getHeight() != 0))
-                                {
-                                    canvas.drawBitmap(parseBox(mBoxPool.get(i)),mBoxPool.get(i).getX(),mBoxPool.get(i).getY(),null);
+                                if ((mBoxPool.get(i).getWidth() != 0) && (mBoxPool.get(i).getHeight() != 0)) {
+                                    canvas.drawBitmap(parseBox(mBoxPool.get(i)), mBoxPool.get(i).getX(), mBoxPool.get(i).getY(), null);
+
+                                    if (LocalBoxController != null)
+                                    {
+                                        LocalBoxController.animationUpdate();
+                                    }
                                 }
                             }
                             catch (Exception e)

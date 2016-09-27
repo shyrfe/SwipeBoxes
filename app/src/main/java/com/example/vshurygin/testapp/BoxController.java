@@ -10,6 +10,7 @@ import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 
 import java.lang.reflect.Array;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,6 +32,10 @@ public class BoxController
     private int ScreenHeight = 0;
     private GestureDetector mGD;
     private ScaleGestureDetector mSGD;
+
+    private boolean mForceFinished = true;
+    private long mForce = 0;
+    private long mLastTime = System.currentTimeMillis();
 
 
     private int mMinX;
@@ -77,89 +82,55 @@ public class BoxController
     {
         mGD.onTouchEvent(_event);
         mSGD.onTouchEvent(_event);
-       /* switch (_event.getAction())
+
+        if (_event.getAction() == MotionEvent.ACTION_UP)
         {
-            case MotionEvent.ACTION_CANCEL:
+            //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+        }
+    }
 
-                //Log.d("Input","Cancel");
-                if ((mEndMotionX - mStartMotionX) > 0)
+    public void animationUpdate()
+    {
+        //Log.d("Animation", "update");
+        if (!mForceFinished)
+        {
+
+            if (mForce == 0)
+            {
+                mForceFinished = true;
+                for (int i = 0; i < BoxPool.size(); i++)
                 {
-                    slideClockwise();
+                    BoxPool.get(i).MoveLastTime = 0;
                 }
-                else
+            }
+            else
+            {
+                long time = System.currentTimeMillis();
+                long dTime = time - mLastTime;
+                if (dTime >= 1000/60)
                 {
-                    slideCounterclockwise();
-                }
-                break;
+                    MoveRight(3);
+                    /*for (int i = 0; i < BoxPool.size(); i++)
+                    {
 
-            case MotionEvent.ACTION_UP:
-
-                //Log.d("Input","Up");
-                if ((mEndMotionY - mStartMotionY) < (mEndMotionX - mStartMotionX))
-                {
-                    if ((mEndMotionX - mStartMotionX) > 0)
-                    {
-                        slideClockwise();
-                    }
-                    else
-                    {
-                        slideCounterclockwise();
-                    }
-                }
-                else
-                {
-                    if ((mEndMotionY - mStartMotionY) > 0)
-                    {
-                        slideClockwise();
-                    }
-                    else
-                    {
-                        slideCounterclockwise();
-                    }
+                        *//*if (BoxPool.get(i).MoveLastTime == 0)
+                        {
+                            BoxPool.get(i).MoveLastTime = time;
+                        }
+                        time = System.currentTimeMillis();*//*
+                        //long dTime = time - BoxPool.get(i).MoveLastTime;
+                        int speed = 3;
+                        float dt = (time - BoxPool.get(i).MoveLastTime)/1000;
+                        BoxPool.get(i).setX(BoxPool.get(i).getX() + speed);
+                        BoxPool.get(i).MoveLastTime = time;//(int)(dTime * 5));
+                    }*/
+                    mLastTime = time;
+                    mForce = mForce - 1;
                 }
 
-                syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-                break;
+            }
 
-            case MotionEvent.ACTION_DOWN:
-
-                //Log.d("Input","Down");
-                mStartMotionX = _event.getX();
-                mStartMotionY = _event.getY();
-
-                mBoxCellController.refresh();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-
-                //Log.d("Input","Move");
-                mEndMotionX = _event.getX();
-                mEndMotionY = _event.getY();
-
-                if ((mEndMotionY - mStartMotionY) < (mEndMotionX - mStartMotionX))
-                {
-                    if ((mEndMotionX - mStartMotionX) > 0)
-                    {
-                        slideClockwise();
-                    }
-                    else
-                    {
-                        slideCounterclockwise();
-                    }
-                }
-                else
-                {
-                    if ((mEndMotionY - mStartMotionY) > 0)
-                    {
-                        slideClockwise();
-                    }
-                    else
-                    {
-                        slideCounterclockwise();
-                    }
-                }
-                break;
-        }*/
+        }
     }
 
     private void slideClockwise()
@@ -191,6 +162,11 @@ public class BoxController
                 y = BoxPool.get(i).getY();
             }
         }
+    }
+    private void slideClockwise(int _force)
+    {
+            mForce = _force;
+            mForceFinished = false;
     }
 
     private void slideCounterclockwise()
@@ -340,6 +316,67 @@ public class BoxController
 
     }
 
+    private void MoveRight(int _step)
+    {
+        for (int i = 0; i < BoxPool.size(); i++)
+        {
+            int x = BoxPool.get(i).getX();
+            int y = BoxPool.get(i).getY();
+
+
+            if (x < mMaxX && y == mMinY)
+            {
+                if (BoxPool.get(i).getX() + _step >= mMaxX)
+                {
+                    BoxPool.get(i).setX(mMaxX);
+                }
+                else
+                {
+                    BoxPool.get(i).setX( BoxPool.get(i).getX() + _step);
+                }
+
+            }
+            else if (x > mMinX && y == mMaxY)
+            {
+                if (BoxPool.get(i).getX() - _step <= mMinX)
+                {
+                    BoxPool.get(i).setX(mMinX);
+                }
+                else
+                {
+                    BoxPool.get(i).setX( BoxPool.get(i).getX() - _step);
+                }
+
+            }
+            else if (x == mMaxX && y < mMaxY)
+            {
+                if (BoxPool.get(i).getY() + _step >= mMaxY)
+                {
+                    BoxPool.get(i).setY(mMaxY);
+                }
+                else
+                {
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() + _step);
+                }
+            }
+            else if (x == mMinX && y > mMinY)
+            {
+                if (BoxPool.get(i).getY() - _step <= mMinY)
+                {
+                    BoxPool.get(i).setY(mMinY);
+                }
+                else
+                {
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() - _step);
+                }
+
+            }
+            x = BoxPool.get(i).getX();
+            y = BoxPool.get(i).getY();
+
+        }
+    }
+
     public class BoxCellController
     {
         ArrayList<BoxCell> BoxCellArray = new ArrayList<>();
@@ -437,15 +474,88 @@ public class BoxController
         @Override
         public void onLongPress(MotionEvent _event)
         {
+            slideClockwise(100);
             Log.d("Gesture", "LongPress");
         }
         @Override
         public boolean onScroll(MotionEvent _event1, MotionEvent _event2, float _distanceX, float _distanceY)
         {
-
             Log.d("Gesture", "Scroll");
+            boolean result = false;
+
+            try
+            {
+                float dX = _event2.getX() - _event1.getX();
+                float dY = _event2.getY() - _event1.getY();
+
+                if (Math.abs(dX) >  Math.abs(dY))
+                {
+                    if (dX > 0)
+                    {
+                        //rigthtX
+                        if (_event2.getY() < ScreenHeight/2)
+                        {
+                            slideClockwise();
+                        }
+                        else
+                        {
+                            slideCounterclockwise();
+                        }
+
+                        //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                    }
+                    else
+                    {
+                        if (_event2.getY() > ScreenHeight/2)
+                        {
+                            slideCounterclockwise();
+                        }
+                        else
+                        {
+                            slideClockwise();
+                        }
+                        // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                        //leftX
+                    }
+                    result = true;
+                }
+                else
+                {
+                    if (dY > 0)
+                    {
+                        if (_event2.getX() > ScreenWidth/2)
+                        {
+                            slideClockwise();
+                        }
+                        else
+                        {
+                            slideCounterclockwise();
+                        }
+
+                        // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                        //BottomY
+                    }
+                    else
+                    {
+                        if (_event2.getX() < ScreenWidth/2)
+                        {
+                            slideCounterclockwise();
+                        }
+                        else
+                        {
+                            slideClockwise();
+                        }
+                        //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                        //TopY
+                    }
+                    result = true;
+                }
+            }
+            catch (Exception e)
+            {e.printStackTrace();}
+
             //slideClockwise();
-            return true;
+            return result;
         }
         @Override
         public boolean onFling (MotionEvent _event1, MotionEvent _event2, float _velocityX, float _velocityY)
@@ -498,11 +608,9 @@ public class BoxController
                     result = true;
                 }
             }
-
             catch (Exception e)
             {e.printStackTrace();}
             return result;
-
         }
     }
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener

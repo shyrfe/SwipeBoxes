@@ -16,6 +16,8 @@ public class Box
     private int mHeight;
     private int mColor;
     private int mNumber;
+    public long MoveLastTime = 0;
+    public int Force = 0;
 
     public Box ()
     {
