@@ -8,6 +8,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
+import android.widget.Toast;
 
 import java.lang.reflect.Array;
 import java.sql.Time;
@@ -23,6 +24,8 @@ public class BoxController
 {
 
     public CopyOnWriteArrayList<Box> BoxPool = new CopyOnWriteArrayList<>();
+    public ArrayList<MovingBox> MovingBoxPool = new ArrayList<>();
+    public ArrayList<MovingBoxMapPoint> MovingBoxMap = new ArrayList<>();
 
     private int[] mReferenceCoord;
 
@@ -92,44 +95,33 @@ public class BoxController
     public void animationUpdate()
     {
         //Log.d("Animation", "update");
-        if (!mForceFinished)
+        if (mLastTime == 0)
         {
+            //MoveRight();
+            mLastTime = System.currentTimeMillis();
+        }
 
+        long time = System.currentTimeMillis();
+        long dTime = (time - mLastTime) / 1000;
+
+
+        if (dTime >= 1/60)
+        {
+            MoveRight();
+            //MoveRight();
+            //MoveRight(3);
             if (mForce == 0)
             {
                 mForceFinished = true;
-                for (int i = 0; i < BoxPool.size(); i++)
-                {
-                    BoxPool.get(i).MoveLastTime = 0;
-                }
             }
             else
             {
-                long time = System.currentTimeMillis();
-                long dTime = time - mLastTime;
-                if (dTime >= 1000/60)
-                {
-                    MoveRight(3);
-                    /*for (int i = 0; i < BoxPool.size(); i++)
-                    {
 
-                        *//*if (BoxPool.get(i).MoveLastTime == 0)
-                        {
-                            BoxPool.get(i).MoveLastTime = time;
-                        }
-                        time = System.currentTimeMillis();*//*
-                        //long dTime = time - BoxPool.get(i).MoveLastTime;
-                        int speed = 3;
-                        float dt = (time - BoxPool.get(i).MoveLastTime)/1000;
-                        BoxPool.get(i).setX(BoxPool.get(i).getX() + speed);
-                        BoxPool.get(i).MoveLastTime = time;//(int)(dTime * 5));
-                    }*/
-                    mLastTime = time;
-                    mForce = mForce - 1;
-                }
+                //MoveLeft(1);
 
+                mForce = mForce - 1;
             }
-
+            mLastTime = time;
         }
     }
 
@@ -209,7 +201,6 @@ public class BoxController
             mDrawBoxes.LocalDrawThread.poolChange = true;
         }
     }
-
     private void boxsInit()
     {
         final int PADDING = 4;
@@ -270,7 +261,94 @@ public class BoxController
             }
         }
         mBoxCellController = new BoxCellController(mReferenceCoord);
+        movingBoxPoolInit(BoxPool);
         poolChanged();
+    }
+    private void movingBoxPoolInit(CopyOnWriteArrayList<Box> _boxPool)
+    {
+        for (int i = 0; i < _boxPool.size(); i++)
+        {
+            if (i == 0)
+            {
+                //Log.d("ADD",""+_coordMass[i*2]+" " + _coordMass[i*2+1]);
+                MovingBoxPool.add(new MovingBox(_boxPool.get(i),
+                                                _boxPool.get(i).getX(),
+                                                _boxPool.get(i).getY(),null,null));
+            }
+            else if ( i == (_boxPool.size()-1))
+            {
+                MovingBoxPool.add(new MovingBox(_boxPool.get(i),
+                                            _boxPool.get(i).getX(),
+                                            _boxPool.get(i).getY(),
+                                            MovingBoxPool.get(i-1),
+                                            MovingBoxPool.get(0)));
+                MovingBoxPool.get(0).LastBox = MovingBoxPool.get(i);
+            }
+            else
+            {
+                MovingBoxPool.add(new MovingBox(_boxPool.get(i),
+                        _boxPool.get(i).getX(),
+                        _boxPool.get(i).getY(),
+                        MovingBoxPool.get(i-1),
+                        null));
+                MovingBoxPool.get(i-1).NextBox = MovingBoxPool.get(i);
+            }
+        }
+
+        MovingBoxPool.get(3).NextBox = MovingBoxPool.get(0);
+        MovingBoxPool.get(0).LastBox = MovingBoxPool.get(3);
+
+        MovingBoxPool.get(6).NextBox = MovingBoxPool.get(3);
+        MovingBoxPool.get(3).LastBox = MovingBoxPool.get(6);
+
+        MovingBoxPool.get(7).NextBox = MovingBoxPool.get(6);
+        MovingBoxPool.get(6).LastBox = MovingBoxPool.get(7);
+
+        MovingBoxPool.get(8).NextBox = MovingBoxPool.get(7);
+        MovingBoxPool.get(7).LastBox = MovingBoxPool.get(8);
+
+        MovingBoxPool.get(5).NextBox = MovingBoxPool.get(8);
+        MovingBoxPool.get(8).LastBox = MovingBoxPool.get(5);
+
+        MovingBoxPool.get(2).NextBox = MovingBoxPool.get(5);
+        MovingBoxPool.get(5).LastBox = MovingBoxPool.get(2);
+
+        for (int i = 0, j = 0; i < MovingBoxPool.size(); i++, j++)
+        {
+            if (i == 5)
+            {
+                MovingBoxPool.get(i).ThisPoint = MovingBoxMap.get(j-1);
+                i++;
+
+            }
+
+            if (i == 0)
+            {
+                MovingBoxMap.add(new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,null));
+            }
+            else if (i == (MovingBoxPool.size() - 1) )
+            {
+                Log.d("This",""+MovingBoxPool.get(i).getX());
+                MovingBoxMap.add(new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,MovingBoxMap.get(j-1)));
+                MovingBoxMap.get(j).NextPoint = MovingBoxMap.get(0);
+                MovingBoxMap.get(0).LastPoint = MovingBoxMap.get(j);
+            }
+            else
+            {
+                MovingBoxMap.add(new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,MovingBoxMap.get(j-1)));
+                MovingBoxMap.get(j-1).NextPoint = MovingBoxMap.get(j);
+            }
+
+            //Log.d("This",""+MovingBoxPool.get(i).ThisPoint.x + " "+MovingBoxPool.get(i).ThisPoint.y);
+            MovingBoxPool.get(i).ThisPoint = MovingBoxMap.get(j);
+
+
+        }
+
+        for (int i = 0; i < MovingBoxPool.size(); i++)
+        {
+            MovingBoxPool.get(i).NextPoint =  MovingBoxPool.get(i).ThisPoint.NextPoint ;
+        }
     }
 
     private void syncPositionWithReferenceCoord(CopyOnWriteArrayList<Box> _boxArray, BoxCellController _boxCellController)
@@ -316,6 +394,19 @@ public class BoxController
 
     }
 
+    private Box findBox (int _x, int _y)
+    {
+        for (int i = 0; i < BoxPool.size();i++)
+        {
+            Box localBox = BoxPool.get(i);
+            if ((localBox.getX() <= _x) && (_x <= (localBox.getX()+localBox.getWidth())) && (localBox.getY() <= _y) && (_y <= (localBox.getY() + localBox.getHeight())))
+            {
+                return localBox;
+            }
+        }
+        return null;
+    }
+
     private void MoveRight(int _step)
     {
         for (int i = 0; i < BoxPool.size(); i++)
@@ -329,6 +420,8 @@ public class BoxController
                 if (BoxPool.get(i).getX() + _step >= mMaxX)
                 {
                     BoxPool.get(i).setX(mMaxX);
+                    int yStep =  (x + _step) - mMaxX;
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() + yStep);
                 }
                 else
                 {
@@ -341,6 +434,9 @@ public class BoxController
                 if (BoxPool.get(i).getX() - _step <= mMinX)
                 {
                     BoxPool.get(i).setX(mMinX);
+                    int yStep = mMinX - (x - _step);
+                    BoxPool.get(i).setY(BoxPool.get(i).getY() - yStep);
+
                 }
                 else
                 {
@@ -353,6 +449,8 @@ public class BoxController
                 if (BoxPool.get(i).getY() + _step >= mMaxY)
                 {
                     BoxPool.get(i).setY(mMaxY);
+                    int xStep = (y + _step) - mMaxY;
+                    BoxPool.get(i).setX(BoxPool.get(i).getX() - xStep);
                 }
                 else
                 {
@@ -364,16 +462,159 @@ public class BoxController
                 if (BoxPool.get(i).getY() - _step <= mMinY)
                 {
                     BoxPool.get(i).setY(mMinY);
+                    int xStep = mMinY - (y - _step);
+                    BoxPool.get(i).setX(BoxPool.get(i).getX() + xStep);
                 }
                 else
                 {
                     BoxPool.get(i).setY( BoxPool.get(i).getY() - _step);
                 }
+            }
+        }
+    }
+    private void MoveLeft (int _step)
+    {
+        float Y_step = (float)(mMaxY-mMinY)/(float)(mMaxX-mMinX);///ScreenHeight / ScreenWidth;
+        //Log.d("Y",Y_step + "");
+        for (int i = 0; i < BoxPool.size(); i++)
+        {
+            int Step = _step;
+            int x = BoxPool.get(i).getX();
+            int y = BoxPool.get(i).getY();
+
+            if (x == mMinX && y < mMaxY)
+            {
+                Step +=1;
+                //Step = (int)Math.ceil(Step * Y_step);
+                if (BoxPool.get(i).getY() + Step >= mMaxY)
+                {
+                    BoxPool.get(i).setY(mMaxY);
+                    int xStep = (y + Step) - mMaxY;
+                    BoxPool.get(i).setX(BoxPool.get(i).getX() + xStep);
+                }
+                else
+                {
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() + Step);
+                }
+            }
+            else if (x == mMaxX && y > mMinY)
+            {
+                Step +=1;
+                //Step *=Y_step;
+                //Step = (int)Math.ceil(Step * Y_step);
+                //Log.d("Step",""+Step);
+                if(BoxPool.get(i).getY() - Step <= mMinY)
+                {
+                    BoxPool.get(i).setY(mMinY);
+                    int xStep = mMinY - (y - Step);
+                    BoxPool.get(i).setX(BoxPool.get(i).getX() - xStep);
+                }
+                else
+                {
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() - Step);
+                }
 
             }
-            x = BoxPool.get(i).getX();
-            y = BoxPool.get(i).getY();
+            else if (x < mMaxX && y == mMaxY)
+            {
+                //Step +=1;
+                if (BoxPool.get(i).getX() + Step >= mMaxX)
+                {
+                    BoxPool.get(i).setX(mMaxX);
+                    int yStep = (x + Step) - mMaxX;
+                    BoxPool.get(i).setY(BoxPool.get(i).getY() - yStep);
+                }
+                else
+                {
+                    BoxPool.get(i).setX( BoxPool.get(i).getX() + Step);
+                }
 
+            }
+            else if (x > mMinX && y == mMinY)
+            {
+                //Step +=1;
+                if(BoxPool.get(i).getX() - Step <= mMinY)
+                {
+                    BoxPool.get(i).setX(mMinX);
+                    int yStep = mMinX - (x - Step);
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() + yStep);
+                }
+                else
+                {
+                    BoxPool.get(i).setX( BoxPool.get(i).getX() - Step);
+                }
+            }
+        }
+    }
+
+    private void MoveRight()
+    {
+        int _step = 1;
+        for (int i = 0; i < MovingBoxPool.size(); i++)
+        {
+            int x = MovingBoxPool.get(i).getX();
+            int y = MovingBoxPool.get(i).getY();
+            //Log.d("MoveRight","Number: " + MovingBoxPool.get(i).LocalBox.getNumber());
+            //Log.d("MoveRight","Last: " + MovingBoxPool.get(i).LastBox.LocalBox.getNumber());
+            //Log.d("MoveRight","Next: " + MovingBoxPool.get(i).NextBox.LocalBox.getNumber());
+
+            if (x < mMaxX && y == mMinY)
+            {
+                if (MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).ThisPoint.NextPoint.x)
+                {
+                    MovingBoxPool.get(i).ThisPoint = MovingBoxPool.get(i).NextPoint;
+                    MovingBoxPool.get(i).NextPoint = MovingBoxPool.get(i).ThisPoint.NextPoint;
+
+                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
+                }
+                else
+                {
+                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
+                }
+            }
+            else if (x > mMinX && y == mMaxY)
+            {
+                if (MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).ThisPoint.NextPoint.x)
+                {
+                    MovingBoxPool.get(i).ThisPoint = MovingBoxPool.get(i).NextPoint;
+                    MovingBoxPool.get(i).NextPoint = MovingBoxPool.get(i).ThisPoint.NextPoint;
+
+                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
+                }
+                else
+                {
+                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
+                }
+
+            }
+            else if (x == mMaxX && y < mMaxY)
+            {
+                if (MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).ThisPoint.NextPoint.y)
+                {
+                    MovingBoxPool.get(i).ThisPoint = MovingBoxPool.get(i).NextPoint;
+                    MovingBoxPool.get(i).NextPoint = MovingBoxPool.get(i).ThisPoint.NextPoint;
+
+                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + _step);
+                }
+                else
+                {
+                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + _step);
+                }
+            }
+            else if (x == mMinX && y > mMinY)
+            {
+                if (MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).ThisPoint.NextPoint.y)
+                {
+                    MovingBoxPool.get(i).ThisPoint = MovingBoxPool.get(i).NextPoint;
+                    MovingBoxPool.get(i).NextPoint = MovingBoxPool.get(i).ThisPoint.NextPoint;
+
+                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - _step);
+                }
+                else
+                {
+                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - _step);
+                }
+            }
         }
     }
 
@@ -474,8 +715,17 @@ public class BoxController
         @Override
         public void onLongPress(MotionEvent _event)
         {
-            slideClockwise(100);
-            Log.d("Gesture", "LongPress");
+            //slideClockwise(100);
+            Box localBox = findBox((int)_event.getX(),(int)_event.getY());
+            if (localBox != null)
+            {
+                Toast.makeText(mDrawBoxes.LocalContext,""+localBox.getNumber(),Toast.LENGTH_SHORT).show();
+                Log.d("Gesture", "LongPress start #"+localBox.getNumber());
+            }
+            else
+            {
+                Toast.makeText(mDrawBoxes.LocalContext,"Box not found!",Toast.LENGTH_SHORT).show();
+            }
         }
         @Override
         public boolean onScroll(MotionEvent _event1, MotionEvent _event2, float _distanceX, float _distanceY)
@@ -622,5 +872,8 @@ public class BoxController
             return true;
         }
     }
+
+
+
 }
 
