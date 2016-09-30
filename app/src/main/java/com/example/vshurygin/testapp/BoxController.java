@@ -39,6 +39,7 @@ public class BoxController
     private boolean mForceFinished = true;
     private long mForce = 0;
     private long mLastTime = System.currentTimeMillis();
+    private long mForceStep;
 
 
     private int mMinX;
@@ -111,20 +112,73 @@ public class BoxController
         {
             //syncPositionWithRightReferenceCoord();
             //syncPositionWithRightReferenceCoord();
-            syncPositionWithLeftReferenceCoord();
-            syncPositionWithLeftReferenceCoord();
+            //syncPositionWithLeftReferenceCoord();
+            //syncPositionWithLeftReferenceCoord();
             //MoveRight();
             //MoveRight(3);
             if (mForce == 0)
             {
+                //syncPositionWithLeftReferenceCoord();
+                //syncPositionWithLeftReferenceCoord();
                 mForceFinished = true;
             }
             else
             {
+                if (Math.abs(mForce) < 3*mForceStep && Math.abs(mForce) > 2*mForceStep)
+                {
+                    if (mForce > 0)
+                    {
+                        for (int i = 0; i < 6; i++)
+                        {
+                            Move(1);
+                        }
+                    }
+                    else if (mForce < 0)
+                    {
+                        for (int i = 0; i < 6; i++)
+                        {
+                            Move(-1);
+                        }
+                    }
+                }
+                else if (Math.abs(mForce) < 2*mForceStep && Math.abs(mForce) > mForceStep)
+                {
+                    if (mForce > 0)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            Move(1);
+                        }
 
+                    }
+                    else if (mForce < 0)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            Move(-1);
+                        }
+                    }
+                }
+                else if (Math.abs(mForce) < mForceStep)
+                {
+                    if (mForce > 0)
+                    {
+                        Move(1);
+                    }
+                    else if (mForce < 0)
+                    {
+                        Move(-1);
+                    }
+                }
                 //MoveLeft(1);
-
-                mForce = mForce - 1;
+                if (mForce > 0)
+                {
+                    mForce = mForce - 1;
+                }
+                else if (mForce < 0)
+                {
+                    mForce = mForce + 1;
+                }
             }
             mLastTime = time;
         }
@@ -387,8 +441,27 @@ public class BoxController
         return null;
     }
 
-    private void MoveRight(int _step)
+    private void MoveWithForce(int _force)
     {
+        mForce = _force;
+        mForceStep = Math.abs(mForce) / 3;
+        mForceFinished = false;
+    }
+    private void Move(int _direction)
+    {
+        if (_direction > 0)
+        {
+            MoveRight();
+        }
+        else if (_direction < 0)
+        {
+            MoveLeft();
+        }
+
+    }
+    private void MoveRight()
+    {
+        int step = 1;
         for (int i = 0; i < BoxPool.size(); i++)
         {
             int x = BoxPool.get(i).getX();
@@ -397,133 +470,47 @@ public class BoxController
 
             if (x < mMaxX && y == mMinY)
             {
-                if (BoxPool.get(i).getX() + _step >= mMaxX)
-                {
-                    BoxPool.get(i).setX(mMaxX);
-                    int yStep =  (x + _step) - mMaxX;
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + yStep);
-                }
-                else
-                {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() + _step);
-                }
-
+                BoxPool.get(i).setX( BoxPool.get(i).getX() + step);
             }
             else if (x > mMinX && y == mMaxY)
             {
-                if (BoxPool.get(i).getX() - _step <= mMinX)
-                {
-                    BoxPool.get(i).setX(mMinX);
-                    int yStep = mMinX - (x - _step);
-                    BoxPool.get(i).setY(BoxPool.get(i).getY() - yStep);
-
-                }
-                else
-                {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() - _step);
-                }
-
+                BoxPool.get(i).setX( BoxPool.get(i).getX() - step);
             }
             else if (x == mMaxX && y < mMaxY)
             {
-                if (BoxPool.get(i).getY() + _step >= mMaxY)
-                {
-                    BoxPool.get(i).setY(mMaxY);
-                    int xStep = (y + _step) - mMaxY;
-                    BoxPool.get(i).setX(BoxPool.get(i).getX() - xStep);
-                }
-                else
-                {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + _step);
-                }
+                BoxPool.get(i).setY( BoxPool.get(i).getY() + step);
             }
             else if (x == mMinX && y > mMinY)
             {
-                if (BoxPool.get(i).getY() - _step <= mMinY)
-                {
-                    BoxPool.get(i).setY(mMinY);
-                    int xStep = mMinY - (y - _step);
-                    BoxPool.get(i).setX(BoxPool.get(i).getX() + xStep);
-                }
-                else
-                {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() - _step);
-                }
+                BoxPool.get(i).setY( BoxPool.get(i).getY() - step);
             }
         }
     }
-    private void MoveLeft (int _step)
+    private void MoveLeft ()
     {
-        float Y_step = (float)(mMaxY-mMinY)/(float)(mMaxX-mMinX);///ScreenHeight / ScreenWidth;
-        //Log.d("Y",Y_step + "");
+        int step = 1;
+
         for (int i = 0; i < BoxPool.size(); i++)
         {
-            int Step = _step;
             int x = BoxPool.get(i).getX();
             int y = BoxPool.get(i).getY();
 
-            if (x == mMinX && y < mMaxY)
-            {
-                Step +=1;
-                //Step = (int)Math.ceil(Step * Y_step);
-                if (BoxPool.get(i).getY() + Step >= mMaxY)
+                if (x == mMinX && y < mMaxY)
                 {
-                    BoxPool.get(i).setY(mMaxY);
-                    int xStep = (y + Step) - mMaxY;
-                    BoxPool.get(i).setX(BoxPool.get(i).getX() + xStep);
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() + step);
                 }
-                else
+                else if (x == mMaxX && y > mMinY)
                 {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + Step);
+                    BoxPool.get(i).setY( BoxPool.get(i).getY() - step);
                 }
-            }
-            else if (x == mMaxX && y > mMinY)
-            {
-                Step +=1;
-                //Step *=Y_step;
-                //Step = (int)Math.ceil(Step * Y_step);
-                //Log.d("Step",""+Step);
-                if(BoxPool.get(i).getY() - Step <= mMinY)
+                else if (x < mMaxX && y == mMaxY)
                 {
-                    BoxPool.get(i).setY(mMinY);
-                    int xStep = mMinY - (y - Step);
-                    BoxPool.get(i).setX(BoxPool.get(i).getX() - xStep);
+                    BoxPool.get(i).setX( BoxPool.get(i).getX() + step);
                 }
-                else
+                else if (x > mMinX && y == mMinY)
                 {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() - Step);
+                    BoxPool.get(i).setX( BoxPool.get(i).getX() - step);
                 }
-
-            }
-            else if (x < mMaxX && y == mMaxY)
-            {
-                //Step +=1;
-                if (BoxPool.get(i).getX() + Step >= mMaxX)
-                {
-                    BoxPool.get(i).setX(mMaxX);
-                    int yStep = (x + Step) - mMaxX;
-                    BoxPool.get(i).setY(BoxPool.get(i).getY() - yStep);
-                }
-                else
-                {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() + Step);
-                }
-
-            }
-            else if (x > mMinX && y == mMinY)
-            {
-                //Step +=1;
-                if(BoxPool.get(i).getX() - Step <= mMinY)
-                {
-                    BoxPool.get(i).setX(mMinX);
-                    int yStep = mMinX - (x - Step);
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + yStep);
-                }
-                else
-                {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() - Step);
-                }
-            }
         }
     }
 
@@ -547,10 +534,6 @@ public class BoxController
                             MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
                         }
                     }
-                    else
-                    {
-                        //MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
-                    }
                 }
                 else
                 {
@@ -568,10 +551,6 @@ public class BoxController
                         {
                             MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
                         }
-                    }
-                    else
-                    {
-                        //MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
                     }
                 }
                 else
@@ -591,10 +570,6 @@ public class BoxController
                             MovingBoxPool.get(i).setY(MovingBoxPool.get(i).getY() + _step);
                         }
                     }
-                    else
-                    {
-                        //MovingBoxPool.get(i).setY(MovingBoxPool.get(i).getY() + _step);
-                    }
                 }
                 else
                 {
@@ -612,10 +587,6 @@ public class BoxController
                         {
                             MovingBoxPool.get(i).setY(MovingBoxPool.get(i).getY() - _step);
                         }
-                    }
-                    else
-                    {
-                        //MovingBoxPool.get(i).setY(MovingBoxPool.get(i).getY() - _step);
                     }
                 }
                 else
@@ -646,10 +617,6 @@ public class BoxController
                             MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + _step);
                         }
                     }
-                    else
-                    {
-
-                    }
                 }
                 else
                 {
@@ -666,10 +633,6 @@ public class BoxController
                         {
                             MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
                         }
-                    }
-                    else
-                    {
-
                     }
                 }
                 else
@@ -689,10 +652,6 @@ public class BoxController
                             MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - _step);
                         }
                     }
-                    else
-                    {
-
-                    }
                 }
                 else
                 {
@@ -710,10 +669,6 @@ public class BoxController
                         {
                             MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
                         }
-                    }
-                    else
-                    {
-
                     }
                 }
                 else
@@ -836,7 +791,7 @@ public class BoxController
         @Override
         public boolean onScroll(MotionEvent _event1, MotionEvent _event2, float _distanceX, float _distanceY)
         {
-            Log.d("Gesture", "Scroll");
+            //Log.d("Gesture", "Scroll");
             boolean result = false;
 
             try
@@ -848,61 +803,66 @@ public class BoxController
                 {
                     if (dX > 0)
                     {
-                        //rigthtX
+                        //LEFT TO RIGHT
                         if (_event2.getY() < ScreenHeight/2)
                         {
-                            slideClockwise();
+                            MoveWithForce(1000);
+                            //Move(1);
                         }
                         else
                         {
-                            slideCounterclockwise();
+                            MoveWithForce(-1000);
+                            //Move(-1);
                         }
 
-                        //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
                     }
                     else
                     {
+                        //RIGHT TO LEFT
                         if (_event2.getY() > ScreenHeight/2)
                         {
-                            slideCounterclockwise();
+                            MoveWithForce(1000);
+                            //Move(1);
                         }
                         else
                         {
-                            slideClockwise();
+                            MoveWithForce(-1000);
+                            //Move(-1);
                         }
-                        // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-                        //leftX
                     }
                     result = true;
                 }
                 else
                 {
+
                     if (dY > 0)
                     {
+                        //TOP TO BOTTOM
                         if (_event2.getX() > ScreenWidth/2)
                         {
-                            slideClockwise();
+                            MoveWithForce(1000);
+                            //Move(1);
                         }
                         else
                         {
-                            slideCounterclockwise();
+                            MoveWithForce(-1000);
+                            //Move(-1);
                         }
-
-                        // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-                        //BottomY
                     }
                     else
                     {
+                        //BOTTOM TO TOP
                         if (_event2.getX() < ScreenWidth/2)
                         {
-                            slideCounterclockwise();
+                            MoveWithForce(1000);
+                            //Move(1);
+
                         }
                         else
                         {
-                            slideClockwise();
+                            MoveWithForce(-1000);
+                            //Move(-1);
                         }
-                        //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-                        //TopY
                     }
                     result = true;
                 }
@@ -910,7 +870,6 @@ public class BoxController
             catch (Exception e)
             {e.printStackTrace();}
 
-            //slideClockwise();
             return result;
         }
         @Override
