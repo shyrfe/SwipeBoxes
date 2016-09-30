@@ -20,5 +20,15 @@ public class MovingBoxMapPoint
             NextPoint = _nextPoint;
             LastPoint = _lastPoint;
         }
+        @Override
+        public boolean equals (Object _obj)
+        {
+            MovingBoxMapPoint _objPoint = (MovingBoxMapPoint)_obj;
+            if ((_objPoint.x == this.x)&&(_objPoint.y == this.y))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 
