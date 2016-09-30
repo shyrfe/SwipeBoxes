@@ -270,7 +270,6 @@ public class BoxController
         {
             if (i == 0)
             {
-                //Log.d("ADD",""+_coordMass[i*2]+" " + _coordMass[i*2+1]);
                 MovingBoxPool.add(new MovingBox(_boxPool.get(i),
                                                 _boxPool.get(i).getX(),
                                                 _boxPool.get(i).getY(),null,null));
@@ -313,41 +312,16 @@ public class BoxController
         MovingBoxPool.get(2).NextBox = MovingBoxPool.get(5);
         MovingBoxPool.get(5).LastBox = MovingBoxPool.get(2);
 
-        for (int i = 0, j = 0; i < MovingBoxPool.size(); i++, j++)
+        for (int i = 0; i < MovingBoxPool.size(); i++)
         {
-            if (i == 5)
-            {
-                MovingBoxPool.get(i).ThisPoint = MovingBoxMap.get(j-1);
-                i++;
-
-            }
-
-            if (i == 0)
-            {
-                MovingBoxMap.add(new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,null));
-            }
-            else if (i == (MovingBoxPool.size() - 1) )
-            {
-                Log.d("This",""+MovingBoxPool.get(i).getX());
-                MovingBoxMap.add(new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,MovingBoxMap.get(j-1)));
-                MovingBoxMap.get(j).NextPoint = MovingBoxMap.get(0);
-                MovingBoxMap.get(0).LastPoint = MovingBoxMap.get(j);
-            }
-            else
-            {
-                MovingBoxMap.add(new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,MovingBoxMap.get(j-1)));
-                MovingBoxMap.get(j-1).NextPoint = MovingBoxMap.get(j);
-            }
-
-            //Log.d("This",""+MovingBoxPool.get(i).ThisPoint.x + " "+MovingBoxPool.get(i).ThisPoint.y);
-            MovingBoxPool.get(i).ThisPoint = MovingBoxMap.get(j);
-
-
+            MovingBoxPool.get(i).ThisPoint = new MovingBoxMapPoint(MovingBoxPool.get(i).getX(),MovingBoxPool.get(i).getY(),null,null);
         }
 
         for (int i = 0; i < MovingBoxPool.size(); i++)
         {
-            MovingBoxPool.get(i).NextPoint =  MovingBoxPool.get(i).ThisPoint.NextPoint ;
+            MovingBoxPool.get(i).ThisPoint.LastPoint = MovingBoxPool.get(i).LastBox.ThisPoint;
+            MovingBoxPool.get(i).ThisPoint.NextPoint = MovingBoxPool.get(i).NextBox.ThisPoint;
+            MovingBoxPool.get(i).NextPoint = MovingBoxPool.get(i).NextBox.ThisPoint;
         }
     }
 
@@ -550,6 +524,8 @@ public class BoxController
     private void MoveRight()
     {
         int _step = 1;
+        Log.d("thisPoint","X: "+MovingBoxPool.get(0).ThisPoint.x + "Y: " + MovingBoxPool.get(0).ThisPoint.y);
+        Log.d("nextPoint","X: "+MovingBoxPool.get(0).NextPoint.x + "Y: " + MovingBoxPool.get(0).NextPoint.y);
         for (int i = 0; i < MovingBoxPool.size(); i++)
         {
             int x = MovingBoxPool.get(i).getX();
