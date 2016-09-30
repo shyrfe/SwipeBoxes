@@ -40,6 +40,8 @@ public class BoxController
     private long mForce = 0;
     private long mLastTime = System.currentTimeMillis();
     private long mForceStep;
+    private long mForceStepNumber = 0;
+    private long mForceNumberOfSteps = 9;
 
 
     private int mMinX;
@@ -111,66 +113,35 @@ public class BoxController
         if (dTime >= 1/60)
         {
             //syncPositionWithRightReferenceCoord();
-            //syncPositionWithRightReferenceCoord();
-            //syncPositionWithLeftReferenceCoord();
             //syncPositionWithLeftReferenceCoord();
             //MoveRight();
             //MoveRight(3);
             if (mForce == 0)
             {
-                //syncPositionWithLeftReferenceCoord();
-                //syncPositionWithLeftReferenceCoord();
+                syncPositionWithLeftReferenceCoord();
                 mForceFinished = true;
             }
             else
             {
-                if (Math.abs(mForce) < 3*mForceStep && Math.abs(mForce) > 2*mForceStep)
+                if (Math.abs((mForce)) < mForceStepNumber * mForceStep)
                 {
-                    if (mForce > 0)
-                    {
-                        for (int i = 0; i < 6; i++)
-                        {
-                            Move(1);
-                        }
-                    }
-                    else if (mForce < 0)
-                    {
-                        for (int i = 0; i < 6; i++)
-                        {
-                            Move(-1);
-                        }
-                    }
+                    mForceStepNumber--;
                 }
-                else if (Math.abs(mForce) < 2*mForceStep && Math.abs(mForce) > mForceStep)
+                if (mForce > 0)
                 {
-                    if (mForce > 0)
-                    {
-                        for (int i = 0; i < 3; i++)
-                        {
-                            Move(1);
-                        }
-
-                    }
-                    else if (mForce < 0)
-                    {
-                        for (int i = 0; i < 3; i++)
-                        {
-                            Move(-1);
-                        }
-                    }
-                }
-                else if (Math.abs(mForce) < mForceStep)
-                {
-                    if (mForce > 0)
+                    for (int i = 0; i < mForceStepNumber; i++)
                     {
                         Move(1);
                     }
-                    else if (mForce < 0)
+                }
+                else if (mForce < 0)
+                {
+                    for (int i = 0; i < mForceStepNumber; i++)
                     {
                         Move(-1);
                     }
                 }
-                //MoveLeft(1);
+
                 if (mForce > 0)
                 {
                     mForce = mForce - 1;
@@ -183,7 +154,6 @@ public class BoxController
             mLastTime = time;
         }
     }
-
     private void slideClockwise()
     {
         for (int i = 0; i < BoxPool.size(); i++)
@@ -444,7 +414,8 @@ public class BoxController
     private void MoveWithForce(int _force)
     {
         mForce = _force;
-        mForceStep = Math.abs(mForce) / 3;
+        mForceStepNumber = mForceNumberOfSteps;
+        mForceStep = Math.abs(mForce) / mForceNumberOfSteps;
         mForceFinished = false;
     }
     private void Move(int _direction)
@@ -459,6 +430,7 @@ public class BoxController
         }
 
     }
+
     private void MoveRight()
     {
         int step = 1;
@@ -856,7 +828,6 @@ public class BoxController
                         {
                             MoveWithForce(1000);
                             //Move(1);
-
                         }
                         else
                         {

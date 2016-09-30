@@ -172,8 +172,12 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                     }
                     synchronized (mSurfaceHolder)
                     {
-                        canvas.drawColor(BACKGROUND_COLOR);
-                        paint.setStrokeWidth(1);
+                        try {
+                            canvas.drawColor(BACKGROUND_COLOR);
+                            paint.setStrokeWidth(1);
+                        }
+                        catch (Exception e)
+                        {e.printStackTrace();}
                         for (int i = 0; i < mBoxPool.size(); i++)
                         {
                             try
@@ -192,7 +196,6 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
                                 e.printStackTrace();
                             }
                             //parseAndDrawBox(canvas,paint,mBoxPool.get(i));
-
                         }
                     }
                 }
