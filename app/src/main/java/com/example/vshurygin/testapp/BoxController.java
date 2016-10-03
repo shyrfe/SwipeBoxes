@@ -25,7 +25,6 @@ public class BoxController
 
     public CopyOnWriteArrayList<Box> BoxPool = new CopyOnWriteArrayList<>();
     public ArrayList<MovingBox> MovingBoxPool = new ArrayList<>();
-    public ArrayList<MovingBoxMapPoint> MovingBoxMap = new ArrayList<>();
 
     private int[] mReferenceCoord;
 
@@ -37,6 +36,7 @@ public class BoxController
     private ScaleGestureDetector mSGD;
 
     private boolean mForceFinished = true;
+    private boolean mScrollRun = false;
     private long mForce = 0;
     private long mLastTime = System.currentTimeMillis();
     private long mForceStep;
@@ -81,15 +81,12 @@ public class BoxController
         }.start();
     }
 
-    private float mStartMotionX = 0;
-    private float mEndMotionX = 0;
-    private float mStartMotionY = 0;
-    private float mEndMotionY = 0;
-
     public void input(MotionEvent _event)
     {
         if (_event.getAction() == MotionEvent.ACTION_UP)
         {
+            mScrollRun = false;
+            Log.d("Scroll",String.valueOf(mScrollRun));
             //if(mForce == 0)
             //{
                 //syncPositionWithRightReferenceCoord();
@@ -106,122 +103,100 @@ public class BoxController
         //Log.d("Animation", "update");
         if (mLastTime == 0)
         {
-            //MoveRight();
             mLastTime = System.currentTimeMillis();
         }
 
         long time = System.currentTimeMillis();
         long dTime = (time - mLastTime) / 1000;
 
-
         if (dTime >= 1/60)
         {
-            if (mForce == 0)
-            {
-                //syncPositionWithLeftReferenceCoord();
-                mForceFinished = true;
-            }
-            else
-            {
-                if (Math.abs((mForce)) < mForceStepNumber * mForceStep)
-                {
-                    mForceStepNumber--;
-                }
-                if (mForce > 0)
-                {
-                    for (int i = 0; i < mForceStepNumber; i++)
-                    {
-                        Move(1);
-                    }
-                }
-                else if (mForce < 0)
-                {
-                    for (int i = 0; i < mForceStepNumber; i++)
-                    {
-                        Move(-1);
-                    }
-                }
-
-                if (mForce > 0)
-                {
-                    mForce = mForce - 1;
-                }
-                else if (mForce < 0)
-                {
-                    mForce = mForce + 1;
-                }
-            }
+            forceMove();
+            syncPosition();
             mLastTime = time;
         }
     }
-    private void slideClockwise()
+    private void syncPosition()
     {
-        for (int i = 0; i < BoxPool.size(); i++)
+        if (mForce == 0 && !mScrollRun)
         {
-            int x = BoxPool.get(i).getX();
-            int y = BoxPool.get(i).getY();
-
-            for (int j = 0; j < 10; j++)
+            for (int i = 0; i < MovingBoxPool.size(); i++)
             {
-                if (x < mMaxX && y == mMinY)
+                MovingBox LocalBox = MovingBoxPool.get(i);
+
+                /*if (Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.getX()) < Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.ThisPoint.x))
                 {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() + 1);
+                    LocalBox.setX(LocalBox.getX() + 1);
                 }
-                else if (x > mMinX && y == mMaxY)
+                else if (Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.getX()) > Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.ThisPoint.x))
                 {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() - 1);
+                    LocalBox.setX(LocalBox.getX() - 1);
                 }
-                else if (x == mMaxX && y < mMaxY)
+                */
+
+                if ((LocalBox.getX() != LocalBox.ThisPoint.x)||(LocalBox.getY() != LocalBox.ThisPoint.y))
                 {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + 1);
+                    if (LocalBox.getX() > LocalBox.ThisPoint.x)
+                    {
+                        LocalBox.setX(LocalBox.getX() - 1);
+                    }
+                    else if (LocalBox.getX() < LocalBox.ThisPoint.x)
+                    {
+                        LocalBox.setX(LocalBox.getX() + 1);
+                    }
+
+                    if (LocalBox.getY() > LocalBox.ThisPoint.y)
+                    {
+                        LocalBox.setY(LocalBox.getY() - 1);
+                    }
+                    else if (LocalBox.getY() < LocalBox.ThisPoint.y)
+                    {
+                        LocalBox.setY(LocalBox.getY() + 1);
+                    }
                 }
-                else if (x == mMinX && y > mMinY)
+                Log.d("Sync","");
+            }
+            //Log.d("Sync","Check");
+        }
+    }
+    private void forceMove()
+    {
+        if (mForce == 0)
+        {
+            //syncPositionWithLeftReferenceCoord();
+            mForceFinished = true;
+        }
+        else
+        {
+            if (Math.abs((mForce)) < mForceStepNumber * mForceStep)
+            {
+                mForceStepNumber--;
+            }
+            if (mForce > 0)
+            {
+                for (int i = 0; i < mForceStepNumber; i++)
                 {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() - 1);
+                    Move(1);
                 }
-                x = BoxPool.get(i).getX();
-                y = BoxPool.get(i).getY();
+            }
+            else if (mForce < 0)
+            {
+                for (int i = 0; i < mForceStepNumber; i++)
+                {
+                    Move(-1);
+                }
+            }
+
+            if (mForce > 0)
+            {
+                mForce = mForce - 1;
+            }
+            else if (mForce < 0)
+            {
+                mForce = mForce + 1;
             }
         }
     }
-    private void slideClockwise(int _force)
-    {
-            mForce = _force;
-            mForceFinished = false;
-    }
-
-    private void slideCounterclockwise()
-    {
-        for (int i = 0; i < BoxPool.size(); i++)
-        {
-            int x = BoxPool.get(i).getX();
-            int y = BoxPool.get(i).getY();
-
-            for (int j = 0; j < 30; j++)
-            {
-                if (x == mMinX && y < mMaxY)
-                {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + 1);
-                }
-                else if (x == mMaxX && y > mMinY)
-                {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() - 1);
-                }
-                else if (x < mMaxX && y == mMaxY)
-                {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() + 1);
-                }
-                else if (x > mMinX && y == mMinY)
-                {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() - 1);
-                }
-
-                x = BoxPool.get(i).getX();
-                y = BoxPool.get(i).getY();
-            }
-        }
-    }
-
     private void poolChanged()
     {
         if (mDrawBoxes.LocalDrawThread != null)
@@ -356,48 +331,6 @@ public class BoxController
         mBoxXDistance = MovingBoxPool.get(0).NextBox.getX() - MovingBoxPool.get(0).getX();
         mBoxYDistance = MovingBoxPool.get(0).LastBox.getY() - MovingBoxPool.get(0).getY();
     }
-
-    private void syncPositionWithReferenceCoord(CopyOnWriteArrayList<Box> _boxArray, BoxCellController _boxCellController)
-    {
-            int dx = Integer.MAX_VALUE;
-            int dy = Integer.MAX_VALUE;
-            int x = _boxArray.get(0).getX();
-            int y = _boxArray.get(0).getY();
-            int cellNumber = 0;
-
-            for (int j = 0; j < _boxCellController.BoxCellArray.size(); j++)
-            {
-                if ((_boxArray.get(0).getX() == mMinX) || (_boxArray.get(0).getX() == mMaxX))
-                {
-                    if ( Math.abs(_boxArray.get(0).getY() - _boxCellController.BoxCellArray.get(j).getY()) < dy )
-                    {
-                            dy = Math.abs(_boxArray.get(0).getY() - _boxCellController.BoxCellArray.get(j).getY());
-                            y = _boxCellController.BoxCellArray.get(j).getY();
-                            cellNumber = j;
-                    }
-                }
-                else if ((_boxArray.get(0).getY() == mMinY) || (_boxArray.get(0).getY() == mMaxY))
-                {
-                    if ( Math.abs(_boxArray.get(0).getX() - _boxCellController.BoxCellArray.get(j).getX()) < dx )
-                    {
-                            dx = Math.abs(_boxArray.get(0).getX() - _boxCellController.BoxCellArray.get(j).getX());
-                            x = _boxCellController.BoxCellArray.get(j).getX();
-                            cellNumber = j;
-                    }
-                }
-            }
-
-        BoxCellController.BoxCell localCell = _boxCellController.BoxCellArray.get(cellNumber);
-        for (int i = 0; i < _boxArray.size();i++)
-        {
-            if (i == 4)
-            {i++;}
-            _boxArray.get(i).setX(localCell.getX());
-            _boxArray.get(i).setY(localCell.getY());
-            localCell = localCell.NextCell;
-        }
-    }
-
     private Box findBox (int _x, int _y)
     {
         for (int i = 0; i < BoxPool.size();i++)
@@ -516,31 +449,42 @@ public class BoxController
         }
 
     }
-
     private void MoveRight()
     {
         int step = 1;
-        for (int i = 0; i < BoxPool.size(); i++)
+        for (int i = 0; i < MovingBoxPool.size(); i++)
         {
-            int x = BoxPool.get(i).getX();
-            int y = BoxPool.get(i).getY();
+            int x = MovingBoxPool.get(i).getX();
+            int y = MovingBoxPool.get(i).getY();
 
 
             if (x < mMaxX && y == mMinY)
             {
-                BoxPool.get(i).setX( BoxPool.get(i).getX() + step);
+                MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + step);
             }
             else if (x > mMinX && y == mMaxY)
             {
-                BoxPool.get(i).setX( BoxPool.get(i).getX() - step);
+                MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - step);
             }
             else if (x == mMaxX && y < mMaxY)
             {
-                BoxPool.get(i).setY( BoxPool.get(i).getY() + step);
+                MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + step);
             }
             else if (x == mMinX && y > mMinY)
             {
-                BoxPool.get(i).setY( BoxPool.get(i).getY() - step);
+                MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - step);
+            }
+
+            if ((MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).ThisPoint.NextPoint.x)&&(MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).ThisPoint.NextPoint.y))
+            {
+                for (int j = 0; j < MovingBoxPool.size(); j++ )
+                {
+                    if(j != 4)
+                    {
+                        MovingBoxPool.get(j).ThisPoint = MovingBoxPool.get(j).ThisPoint.NextPoint;
+                    }
+                }
+
             }
         }
     }
@@ -548,190 +492,36 @@ public class BoxController
     {
         int step = 1;
 
-        for (int i = 0; i < BoxPool.size(); i++)
+        for (int i = 0; i < MovingBoxPool.size(); i++)
         {
-            int x = BoxPool.get(i).getX();
-            int y = BoxPool.get(i).getY();
+            int x = MovingBoxPool.get(i).getX();
+            int y = MovingBoxPool.get(i).getY();
 
                 if (x == mMinX && y < mMaxY)
                 {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() + step);
+                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + step);
                 }
                 else if (x == mMaxX && y > mMinY)
                 {
-                    BoxPool.get(i).setY( BoxPool.get(i).getY() - step);
+                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - step);
                 }
                 else if (x < mMaxX && y == mMaxY)
                 {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() + step);
+                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + step);
                 }
                 else if (x > mMinX && y == mMinY)
                 {
-                    BoxPool.get(i).setX( BoxPool.get(i).getX() - step);
+                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - step);
                 }
-        }
-    }
 
-    private void syncPositionWithRightReferenceCoord()
-    {
-        int _step = 1;
-
-        for (int i = 0; i < MovingBoxPool.size(); i++)
-        {
-            int x = MovingBoxPool.get(i).getX();
-            int y = MovingBoxPool.get(i).getY();
-
-            if (x < mMaxX && y == mMinY)
+            if ((MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).ThisPoint.LastPoint.x)&&(MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).ThisPoint.LastPoint.y))
             {
-                if (MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).NextBox.getY())
+                for (int j = 0; j < MovingBoxPool.size(); j++ )
                 {
-                    if ((MovingBoxPool.get(i).NextBox.getX() - MovingBoxPool.get(i).getX()) > mBoxXDistance)
+                    if(j != 4)
                     {
-                        while ((MovingBoxPool.get(i).NextBox.getX() - MovingBoxPool.get(i).getX()) > mBoxXDistance)
-                        {
-                            MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
-                        }
+                        MovingBoxPool.get(j).ThisPoint = MovingBoxPool.get(j).ThisPoint.LastPoint;
                     }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
-                }
-
-            }
-            else if (x > mMinX && y == mMaxY)
-            {
-                if (MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).NextBox.getY())
-                {
-                    if ((MovingBoxPool.get(i).getX() - MovingBoxPool.get(i).NextBox.getX()) > mBoxXDistance)
-                    {
-                        while ((MovingBoxPool.get(i).getX() - MovingBoxPool.get(i).NextBox.getX()) > mBoxXDistance)
-                        {
-                            MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
-                }
-
-            }
-            else if (x == mMaxX && y < mMaxY)
-            {
-                if (MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).NextBox.getX())
-                {
-                    if ((MovingBoxPool.get(i).NextBox.getY() - MovingBoxPool.get(i).getY()) > mBoxYDistance)
-                    {
-                        while ((MovingBoxPool.get(i).NextBox.getY() - MovingBoxPool.get(i).getY()) > mBoxYDistance)
-                        {
-                            MovingBoxPool.get(i).setY(MovingBoxPool.get(i).getY() + _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + _step );
-                }
-
-            }
-            else if (x == mMinX && y > mMinY)
-            {
-                if (MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).NextBox.getX())
-                {
-                    if (( MovingBoxPool.get(i).getY() - MovingBoxPool.get(i).NextBox.getY()) > mBoxYDistance)
-                    {
-                        while (( MovingBoxPool.get(i).getY() - MovingBoxPool.get(i).NextBox.getY()) > mBoxYDistance)
-                        {
-                            MovingBoxPool.get(i).setY(MovingBoxPool.get(i).getY() - _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - _step );
-                }
-            }
-        }
-    }
-
-    private void syncPositionWithLeftReferenceCoord()
-    {
-        int _step = 1;
-
-        for (int i = 0; i < MovingBoxPool.size(); i++)
-        {
-            int x = MovingBoxPool.get(i).getX();
-            int y = MovingBoxPool.get(i).getY();
-
-            if (x == mMinX && y < mMaxY)
-            {
-                if (MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).LastBox.getX())
-                {
-                    if ((MovingBoxPool.get(i).LastBox.getY() - MovingBoxPool.get(i).getY()) > mBoxYDistance)
-                    {
-                        while ((MovingBoxPool.get(i).LastBox.getY() - MovingBoxPool.get(i).getY()) > mBoxYDistance)
-                        {
-                            MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + _step);
-                }
-            }
-            else if (x < mMaxX && y == mMaxY)
-            {
-                if(MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).LastBox.getY())
-                {
-                    if ((MovingBoxPool.get(i).LastBox.getX() - MovingBoxPool.get(i).getX()) > mBoxXDistance)
-                    {
-                        while ((MovingBoxPool.get(i).LastBox.getX() - MovingBoxPool.get(i).getX()) > mBoxXDistance)
-                        {
-                            MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setX(MovingBoxPool.get(i).getX() + _step);
-                }
-
-            }
-            else if (x == mMaxX && y > mMinY)
-            {
-                if (MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).LastBox.getX())
-                {
-                    if ((MovingBoxPool.get(i).getY() - MovingBoxPool.get(i).LastBox.getY()) > mBoxYDistance)
-                    {
-                        while ((MovingBoxPool.get(i).getY() - MovingBoxPool.get(i).LastBox.getY()) > mBoxYDistance)
-                        {
-                            MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - _step);
-                }
-
-            }
-            else if (x > mMinX && y == mMinY)
-            {
-                if(MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).LastBox.getY())
-                {
-                    if ((MovingBoxPool.get(i).getX() - MovingBoxPool.get(i).LastBox.getX()) > mBoxXDistance)
-                    {
-                        while ((MovingBoxPool.get(i).getX() - MovingBoxPool.get(i).LastBox.getX()) > mBoxXDistance)
-                        {
-                            MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
-                        }
-                    }
-                }
-                else
-                {
-                    MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - _step);
                 }
             }
         }
@@ -836,6 +626,7 @@ public class BoxController
         {
             mForce = 0;
             mForceFinished = true;
+            mScrollRun = true;
 
             return false;
         }
@@ -861,6 +652,7 @@ public class BoxController
             boolean result = false;
             try
             {
+
                 float dX = _event2.getX() - _event1.getX();
                 float dY = _event2.getY() - _event1.getY();
 
