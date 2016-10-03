@@ -249,6 +249,7 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
             return bm;
         }
+
         private void parseAndDrawBox(Canvas _canvas, Paint _paint, Box _box)
         {
 

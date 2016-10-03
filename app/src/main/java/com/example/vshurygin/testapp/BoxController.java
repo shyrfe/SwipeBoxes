@@ -88,13 +88,17 @@ public class BoxController
 
     public void input(MotionEvent _event)
     {
+        if (_event.getAction() == MotionEvent.ACTION_UP)
+        {
+            //if(mForce == 0)
+            //{
+                //syncPositionWithRightReferenceCoord();
+            //}
+            //Log.d("UP","UP");
+        }
         mGD.onTouchEvent(_event);
         mSGD.onTouchEvent(_event);
 
-        /*if (_event.getAction() == MotionEvent.ACTION_UP)
-        {
-            //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-        }*/
     }
 
     public void animationUpdate()
@@ -112,13 +116,9 @@ public class BoxController
 
         if (dTime >= 1/60)
         {
-            //syncPositionWithRightReferenceCoord();
-            //syncPositionWithLeftReferenceCoord();
-            //MoveRight();
-            //MoveRight(3);
             if (mForce == 0)
             {
-                syncPositionWithLeftReferenceCoord();
+                //syncPositionWithLeftReferenceCoord();
                 mForceFinished = true;
             }
             else
@@ -417,6 +417,92 @@ public class BoxController
         mForceStepNumber = mForceNumberOfSteps;
         mForceStep = Math.abs(mForce) / mForceNumberOfSteps;
         mForceFinished = false;
+    }
+    private void MoveTo(Box _box,int _distX, int _distY)
+    {
+        int X = _distX;
+        int Y = _distY;
+        Log.d("MoveTo","X:"+X+" Y:"+Y);
+        Box LocalBox = _box;
+
+        if (LocalBox != null)
+        {
+            if (Math.abs(X) > Math.abs(Y))
+            {
+                if (LocalBox.getY() < ScreenHeight/2)
+                {
+                    if (X < 0)
+                    {
+                        for (int i = 0; i < (X*-1);i++)
+                        {
+                            MoveRight();
+                        }
+                    }
+                    else if (X > 0)
+                    {
+                        for (int i = 0; i < X; i++)
+                        {
+                            MoveLeft();
+                        }
+                    }
+                }
+                else
+                {
+                    if (X < 0)
+                    {
+                        for (int i = 0; i < (X*-1);i++)
+                        {
+                            MoveLeft();
+                        }
+                    }
+                    else if (X > 0)
+                    {
+                        for (int i = 0; i < X; i++)
+                        {
+                            MoveRight();
+                        }
+                    }
+                }
+            }
+            else if (Math.abs(X) < Math.abs(Y))
+            {
+                if (LocalBox.getX() < ScreenWidth/2)
+                {
+                    if (Y < 0)
+                    {
+                        for (int i = 0; i < (Y*-1);i++)
+                        {
+                            MoveLeft();
+
+                        }
+                    }
+                    else if (Y > 0)
+                    {
+                        for (int i = 0; i < Y; i++)
+                        {
+                            MoveRight();
+                        }
+                    }
+                }
+                else
+                {
+                    if (Y < 0)
+                    {
+                        for (int i = 0; i < (Y*-1);i++)
+                        {
+                            MoveRight();
+                        }
+                    }
+                    else if (Y > 0)
+                    {
+                        for (int i = 0; i < Y; i++)
+                        {
+                            MoveLeft();
+                        }
+                    }
+                }
+            }
+        }
     }
     private void Move(int _direction)
     {
@@ -746,6 +832,14 @@ public class BoxController
     private class GestureListener extends GestureDetector.SimpleOnGestureListener
     {
         @Override
+        public boolean onDown(MotionEvent _event)
+        {
+            mForce = 0;
+            mForceFinished = true;
+
+            return false;
+        }
+        @Override
         public void onLongPress(MotionEvent _event)
         {
             //slideClockwise(100);
@@ -765,7 +859,6 @@ public class BoxController
         {
             //Log.d("Gesture", "Scroll");
             boolean result = false;
-
             try
             {
                 float dX = _event2.getX() - _event1.getX();
@@ -778,47 +871,39 @@ public class BoxController
                         //LEFT TO RIGHT
                         if (_event2.getY() < ScreenHeight/2)
                         {
-                            MoveWithForce(1000);
-                            //Move(1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                         else
                         {
-                            MoveWithForce(-1000);
-                            //Move(-1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
-
                     }
                     else
                     {
                         //RIGHT TO LEFT
                         if (_event2.getY() > ScreenHeight/2)
                         {
-                            MoveWithForce(1000);
-                            //Move(1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                         else
                         {
-                            MoveWithForce(-1000);
-                            //Move(-1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                     }
                     result = true;
                 }
                 else
                 {
-
                     if (dY > 0)
                     {
                         //TOP TO BOTTOM
                         if (_event2.getX() > ScreenWidth/2)
                         {
-                            MoveWithForce(1000);
-                            //Move(1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                         else
                         {
-                            MoveWithForce(-1000);
-                            //Move(-1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                     }
                     else
@@ -826,13 +911,11 @@ public class BoxController
                         //BOTTOM TO TOP
                         if (_event2.getX() < ScreenWidth/2)
                         {
-                            MoveWithForce(1000);
-                            //Move(1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                         else
                         {
-                            MoveWithForce(-1000);
-                            //Move(-1);
+                            MoveTo(findBox((int)_event2.getX(),(int)_event2.getY()),(int)_distanceX,(int)_distanceY);
                         }
                     }
                     result = true;
@@ -840,38 +923,52 @@ public class BoxController
             }
             catch (Exception e)
             {e.printStackTrace();}
-
             return result;
         }
         @Override
         public boolean onFling (MotionEvent _event1, MotionEvent _event2, float _velocityX, float _velocityY)
         {
-            Log.d("Gesture","Fling");
-            final int SWIPE_THRESHOLD = 100;
-            final int SWIPE_VELOCITY_THRESHOLD = 100;
+            //Log.d("Gesture","Fling");
+            final int SWIPE_THRESHOLD = 50;
+            final int SWIPE_VELOCITY_THRESHOLD = 200;
 
+            int forceX = 0;
+            int forceY = 0;
             boolean result = false;
-            //Log.d("Fling","X: "+_velocityX + " Y: " + _velocityY);
+            Log.d("Fling","X: "+_velocityX + " Y: " + _velocityY);
             try
             {
                 float dX = _event2.getX() - _event1.getX();
                 float dY = _event2.getY() - _event1.getY();
-
+                forceX = (int)Math.abs(_velocityX);
+                forceY = (int)Math.abs(_velocityY);
                 if (Math.abs(dX) >  Math.abs(dY))
                 {
                     if (Math.abs(dX) > SWIPE_THRESHOLD && Math.abs(_velocityX) > SWIPE_VELOCITY_THRESHOLD)
                     {
                         if (dX > 0)
                         {
-                          //rigthtX
-                            slideClockwise();
-                            //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
+                            //LEFT TO RIGHT
+                            if (_event2.getY() < ScreenHeight/2)
+                            {
+                                MoveWithForce(forceX / 10);
+                            }
+                            else
+                            {
+                                MoveWithForce((forceX  * -1) /10);
+                            }
                         }
                         else
                         {
-                            slideCounterclockwise();
-                           // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-                            //leftX
+                            //RIGHT TO LEFT
+                            if (_event2.getY() > ScreenHeight/2)
+                            {
+                                MoveWithForce(forceX   /10);
+                            }
+                            else
+                            {
+                                MoveWithForce((forceX  *-1) /10);
+                            }
                         }
                         result = true;
                     }
@@ -880,16 +977,27 @@ public class BoxController
                 {
                     if (dY > 0)
                     {
-                        slideClockwise();
-                       // syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-                        //BottomY
+                        //TOP TO BOTTOM
+                        if (_event2.getX() > ScreenWidth/2)
+                        {
+                            MoveWithForce(forceY / 10);
+                        }
+                        else
+                        {
+                            MoveWithForce((forceY  *-1) /10);
+                        }
                     }
                     else
                     {
-                        slideCounterclockwise();
-                        //syncPositionWithReferenceCoord(BoxPool,mBoxCellController);
-
-                        //TopY
+                        //BOTTOM TO TOP
+                        if (_event2.getX() < ScreenWidth/2)
+                        {
+                            MoveWithForce(forceY / 10);
+                        }
+                        else
+                        {
+                            MoveWithForce((forceY  *-1) /10);
+                        }
                     }
                     result = true;
                 }
