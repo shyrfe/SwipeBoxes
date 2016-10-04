@@ -46,7 +46,6 @@ public class BoxController
     private long mForceStepNumber = 0;
     private long mForceNumberOfSteps = 9;
 
-
     private int mMinX;
     private int mMaxX;
     private int mMinY;
@@ -219,10 +218,10 @@ public class BoxController
 
         //размер первого отступа
         int first_width_margin = (ScreenWidth - (Math.abs((ScreenWidth - TOTAL_PADDING_WIDTH) / BOX_WIDTH_NUMBER)*BOX_WIDTH_NUMBER))/2;
-        int first_height_margin = (ScreenHeight - (Math.abs((ScreenHeight -TOTAL_PADDING_HEIGHT) / BOX_HEIGHT_NUMBER)* BOX_HEIGHT_NUMBER))/2;
-
         int boxsSpaceWidth = (ScreenWidth - (first_width_margin*2) - TOTAL_PADDING_WIDTH);
-        int boxsSpaceHeight = (ScreenHeight- (first_height_margin * 2) - TOTAL_PADDING_HEIGHT);
+
+        int first_height_margin = (ScreenHeight - boxsSpaceWidth)/2;//(ScreenHeight - (Math.abs((ScreenHeight -TOTAL_PADDING_HEIGHT) / BOX_HEIGHT_NUMBER)* BOX_HEIGHT_NUMBER))/2;
+        int boxsSpaceHeight = (ScreenHeight - (first_height_margin * 2) - TOTAL_PADDING_HEIGHT);
 
         int box_width = Math.abs(boxsSpaceWidth / BOX_WIDTH_NUMBER);//ширина box'а
         int box_height = Math.abs(boxsSpaceHeight / BOX_HEIGHT_NUMBER);//высота box'а
