@@ -127,8 +127,9 @@ public class BoxController
     }
     private void syncPosition()
     {
-        if (mForce == 0 && !mScrollRun)
+        if (Math.abs(mForce) < 100 && !mScrollRun)
         {
+            mForce = 0;
             int dir = 0;
 
             for (int i = 0; i < MovingBoxPool.size(); i++)
