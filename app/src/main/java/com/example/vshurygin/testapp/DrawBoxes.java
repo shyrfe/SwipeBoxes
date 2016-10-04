@@ -211,11 +211,6 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
         private Bitmap parseBox (Box _box)
         {
-            int x1 = _box.getX();
-            int y1 = _box.getY();
-            int x2 = _box.getX() + _box.getWidth();
-            int y2 = _box.getY() + _box.getHeight();
-
             int boxWidth = _box.getWidth();
             int boxHeight = _box.getHeight();
 
@@ -234,12 +229,16 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
             _paint.setStyle(Paint.Style.STROKE);
             _paint.setColor(Color.BLACK);
+
+            int textSize;
             if (ScreenWidth < 500)
             {
                 _paint.setStrokeWidth(3);
+                textSize = 30;
             }
             else
             {
+                textSize = 50;
                 _paint.setStrokeWidth(5);
             }
 
@@ -250,7 +249,7 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
             _paint.setStrokeWidth(3);
             _paint.setStyle(Paint.Style.FILL);
-            int textSize = 50;
+
             _paint.setTextSize(textSize);
             _paint.setTypeface(Typeface.MONOSPACE);
             if (_box.getNumber() != -1)
@@ -293,94 +292,28 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
             _canvas.drawBitmap(bm,x1,y1,null);
 
-            /*if (mBoxPattern == null)
+            _paint.setStrokeWidth(3);
+            _paint.setStyle(Paint.Style.FILL);
+
+            int textSize;
+            if (ScreenWidth < 500)
             {
-                *//*Bitmap bm = Bitmap.createBitmap(100,100,Bitmap.Config.ARGB_8888);
-                        Canvas cs = new Canvas(bm);
-                        Paint pt = new Paint();
-
-                        pt.setColor(Color.BLUE);
-                        cs.drawRect(1,1,10,10,pt);
-                        canvas.drawBitmap(bm,10,10,null);*//*
-
-                int boxWidth = _box.getWidth();
-                int boxHeight = _box.getHeight();
-
-                Bitmap bm = Bitmap.createBitmap(boxWidth,boxHeight,Bitmap.Config.ARGB_8888);
-                Canvas CanvasBoxPattern = new Canvas(bm);
-
-                Path pathBox = new Path();
-                pathBox.reset();
-
-                _paint.setStyle(Paint.Style.FILL);
-                _paint.setColor(_box.getColor());
-
-                pathBox.addRect(0,0,boxWidth,boxHeight,Path.Direction.CW);
-                CanvasBoxPattern.drawPath(pathBox,_paint);
-
-                _paint.setStyle(Paint.Style.STROKE);
-                _paint.setColor(Color.BLACK);
-                _paint.setStrokeWidth(5);
-
-                Path rectPath = new Path();
-                rectPath.addRect(3,3,boxWidth-3,boxHeight-3,Path.Direction.CW);
-                CanvasBoxPattern.drawPath(rectPath,_paint);
-
-                mBoxPattern =  bm;
-
-                _canvas.drawBitmap(mBoxPattern,x1,y1,null);
-            }
-            else if (_box.getColor() != Color.parseColor("#BDE0EB"))
-            {
-                int boxWidth = _box.getWidth();
-                int boxHeight = _box.getHeight();
-
-                Bitmap bm = Bitmap.createBitmap(boxWidth,boxHeight,Bitmap.Config.ARGB_8888);
-                Canvas CanvasBoxPattern = new Canvas(bm);
-
-                Path pathBox = new Path();
-                pathBox.reset();
-
-                _paint.setStyle(Paint.Style.FILL);
-                _paint.setColor(_box.getColor());
-
-                pathBox.addRect(0,0,boxWidth,boxHeight,Path.Direction.CW);
-                CanvasBoxPattern.drawPath(pathBox,_paint);
-
-                _paint.setStyle(Paint.Style.STROKE);
-                _paint.setColor(Color.BLACK);
-                _paint.setStrokeWidth(5);
-
-                Path rectPath = new Path();
-                rectPath.addRect(3,3,boxWidth-3,boxHeight-3,Path.Direction.CW);
-                CanvasBoxPattern.drawPath(rectPath,_paint);
-
-                _canvas.drawBitmap(bm,x1,y1,null);
+                _paint.setStrokeWidth(3);
+                textSize = 30;
             }
             else
             {
-                _canvas.drawBitmap(mBoxPattern,x1,y1,null);
-            }*/
+                textSize = 50;
+                _paint.setStrokeWidth(5);
+            }
 
-            //pathBox.moveTo(100,100);
-            /*pathBox.addRect(x1,y1,x2,y2,Path.Direction.CW);
-            _canvas.drawPath(pathBox,_paint);*/
-            //_canvas.drawRect(x1,y1,x2,y2,_paint);
-
-            /*_paint.setStyle(Paint.Style.STROKE);
-            _paint.setColor(Color.BLACK);
-            _paint.setStrokeWidth(5);*/
-            //_canvas.drawRect(x1+3,y1+3,x2-3,y2-3,_paint);
-
-            /*Path rectPath = new Path();
-            rectPath.addRect(x1+3,y1+3,x2-3,y2-3,Path.Direction.CW);
-            _canvas.drawPath(rectPath,_paint);*/
-
-            _paint.setStrokeWidth(3);
-            _paint.setStyle(Paint.Style.FILL);
-            _paint.setTextSize(50);
+            _paint.setTextSize(textSize);
             _paint.setTypeface(Typeface.MONOSPACE);
-            _canvas.drawText(String.valueOf(_box.getNumber()),x1+((x2-x1)/2),y1+((y2-y1)/2),_paint);
+            if (_box.getNumber() != -1)
+            {
+                _canvas.drawText(String.valueOf(_box.getNumber()),x1+((x2-x1)/2) - textSize/4 ,y1+((y2-y1)/2)+ textSize/4,_paint);
+            }
+
         }
     }
 
