@@ -129,6 +129,44 @@ public class BoxController
     {
         if (mForce == 0 && !mScrollRun)
         {
+            int dir = 0;
+
+            for (int i = 0; i < MovingBoxPool.size(); i++)
+            {
+                if (MovingBoxPool.get(i).ThisPoint.x == mMinX && MovingBoxPool.get(i).ThisPoint.y == mMinY)
+                {
+                    if (((MovingBoxPool.get(i).ThisPoint.NextPoint.x - MovingBoxPool.get(i).getX()) < ((MovingBoxPool.get(i).ThisPoint.NextPoint.x - MovingBoxPool.get(i).ThisPoint.x)/2)) && (MovingBoxPool.get(i).ThisPoint.y == MovingBoxPool.get(i).ThisPoint.NextPoint.y))
+                    {
+                        dir = 1;
+                        break;
+                    }
+                    else if (((MovingBoxPool.get(i).ThisPoint.LastPoint.y - MovingBoxPool.get(i).getY()) < ((MovingBoxPool.get(i).ThisPoint.LastPoint.y - MovingBoxPool.get(i).ThisPoint.y)/2)) &&(MovingBoxPool.get(i).ThisPoint.x == MovingBoxPool.get(i).ThisPoint.LastPoint.x ))
+                    {
+                        dir = -1;
+                        break;
+                    }
+                }
+
+            }
+
+            //Log.d("DIR",String.valueOf(dir));
+            if (dir == 1)
+            {
+                for (int i = 0; i < MovingBoxPool.size(); i++)
+                {
+                    if ( i != 4)
+                    MovingBoxPool.get(i).ThisPoint = MovingBoxPool.get(i).ThisPoint.NextPoint;
+                }
+            }
+            else if (dir == -1)
+            {
+                for (int i = 0; i < MovingBoxPool.size(); i++)
+                {
+                    if ( i != 4)
+                        MovingBoxPool.get(i).ThisPoint = MovingBoxPool.get(i).ThisPoint.LastPoint;
+                }
+            }
+
             for (int i = 0; i < MovingBoxPool.size(); i++)
             {
                 MovingBox LocalBox = MovingBoxPool.get(i);
@@ -153,8 +191,9 @@ public class BoxController
                         LocalBox.setY(LocalBox.getY() + 1);
                     }
                 }
-                Log.d("Sync","");
+                //Log.d("Sync","");
             }
+
             //Log.d("Sync","Check");
         }
     }
