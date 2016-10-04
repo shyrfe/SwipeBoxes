@@ -94,13 +94,7 @@ public class BoxController
                 mLongPressStart = false;
                 Toast.makeText(mDrawBoxes.LocalContext,""+mLongPressBoxNumber,Toast.LENGTH_SHORT).show();
                 Log.d("Gesture", "End LongPress #"+ mLongPressBoxNumber);
-
             }
-            //if(mForce == 0)
-            //{
-                //syncPositionWithRightReferenceCoord();
-            //}
-            //Log.d("UP","UP");
         }
         mGD.onTouchEvent(_event);
         mSGD.onTouchEvent(_event);
@@ -149,8 +143,6 @@ public class BoxController
                 }
 
             }
-
-            //Log.d("DIR",String.valueOf(dir));
             if (dir == 1)
             {
                 for (int i = 0; i < MovingBoxPool.size(); i++)
@@ -192,17 +184,13 @@ public class BoxController
                         LocalBox.setY(LocalBox.getY() + 1);
                     }
                 }
-                //Log.d("Sync","");
             }
-
-            //Log.d("Sync","Check");
         }
     }
     private void forceMove()
     {
         if (mForce == 30 || mForce == -30)
         {
-            //syncPositionWithLeftReferenceCoord();
             mForce = 0;
             mForceFinished = true;
         }
@@ -509,8 +497,6 @@ public class BoxController
             else if (x > mMinX && y == mMaxY)//Bottom Right To Left
             {
                 MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - step);
-
-                //if (MovingBoxPool.get(i))
             }
             else if (x == mMaxX && y < mMaxY)//Right Top to Bottom
             {
@@ -641,7 +627,6 @@ public class BoxController
             {
                 if (i == 0)
                 {
-                    //Log.d("ADD",""+_coordMass[i*2]+" " + _coordMass[i*2+1]);
                     BoxCellArray.add(new BoxCell(_coordMass[i*2],_coordMass[i*2+1]));
                 }
                 else if ( i == (_coordMass.length/2)-1)
