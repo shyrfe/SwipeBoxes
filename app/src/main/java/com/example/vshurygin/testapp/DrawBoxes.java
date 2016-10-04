@@ -234,7 +234,15 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
             _paint.setStyle(Paint.Style.STROKE);
             _paint.setColor(Color.BLACK);
-            _paint.setStrokeWidth(5);
+            if (ScreenWidth < 500)
+            {
+                _paint.setStrokeWidth(3);
+            }
+            else
+            {
+                _paint.setStrokeWidth(5);
+            }
+
 
             Path rectPath = new Path();
             rectPath.addRect(3,3,boxWidth-3,boxHeight-3,Path.Direction.CW);
@@ -242,14 +250,13 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
 
             _paint.setStrokeWidth(3);
             _paint.setStyle(Paint.Style.FILL);
-            _paint.setTextSize(50);
+            int textSize = 50;
+            _paint.setTextSize(textSize);
             _paint.setTypeface(Typeface.MONOSPACE);
             if (_box.getNumber() != -1)
             {
-                CanvasBoxPattern.drawText(String.valueOf(_box.getNumber()),_box.getWidth()/2,_box.getHeight()/2,_paint);
+                CanvasBoxPattern.drawText(String.valueOf(_box.getNumber()),_box.getWidth()/2 - textSize/4,_box.getHeight()/2 + textSize/4,_paint);
             }
-
-
             return bm;
         }
 

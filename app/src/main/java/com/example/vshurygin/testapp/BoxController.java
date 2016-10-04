@@ -463,21 +463,53 @@ public class BoxController
             int y = MovingBoxPool.get(i).getY();
 
 
-            if (x < mMaxX && y == mMinY)
+            if (x < mMaxX && y == mMinY)//Top Left To Right
             {
                 MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() + step);
             }
-            else if (x > mMinX && y == mMaxY)
+            else if (x > mMinX && y == mMaxY)//Bottom Right To Left
             {
                 MovingBoxPool.get(i).setX( MovingBoxPool.get(i).getX() - step);
+
+                //if (MovingBoxPool.get(i))
             }
-            else if (x == mMaxX && y < mMaxY)
+            else if (x == mMaxX && y < mMaxY)//Right Top to Bottom
             {
                 MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + step);
+
+                if (MovingBoxPool.get(i).NextBox.getX() != MovingBoxPool.get(i).getX())
+                {
+                    while ((mMaxY - MovingBoxPool.get(i).getY())+(mMaxX - MovingBoxPool.get(i).NextBox.getX()) > mBoxXDistance)
+                    {
+                        MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + step);
+                    }
+                }
+                else if (MovingBoxPool.get(i).NextBox.getX() == MovingBoxPool.get(i).getX())
+                {
+                    while(MovingBoxPool.get(i).NextBox.getY() - MovingBoxPool.get(i).getY() > mBoxYDistance)
+                    {
+                        MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() + step);
+                    }
+                }
             }
-            else if (x == mMinX && y > mMinY)
+            else if (x == mMinX && y > mMinY)//Left Bottom To Top
             {
                 MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - step);
+
+                if (MovingBoxPool.get(i).NextBox.getX() != MovingBoxPool.get(i).getX())
+                {
+                    while((MovingBoxPool.get(i).NextBox.getX() -mMinX) + (MovingBoxPool.get(i).getY() - mMinY) > mBoxXDistance)
+                    {
+                        MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - step);
+                    }
+                }
+                else if (MovingBoxPool.get(i).NextBox.getX() == MovingBoxPool.get(i).getX())
+                {
+                    while(MovingBoxPool.get(i).getY() - MovingBoxPool.get(i).NextBox.getY() > mBoxYDistance)
+                    {
+                        MovingBoxPool.get(i).setY( MovingBoxPool.get(i).getY() - step);
+                    }
+                }
             }
 
             if ((MovingBoxPool.get(i).getX() == MovingBoxPool.get(i).ThisPoint.NextPoint.x)&&(MovingBoxPool.get(i).getY() == MovingBoxPool.get(i).ThisPoint.NextPoint.y))
@@ -743,7 +775,7 @@ public class BoxController
         {
             //Log.d("Gesture","Fling");
             final int SWIPE_THRESHOLD = 50;
-            final int SWIPE_VELOCITY_THRESHOLD = 200;
+            final int SWIPE_VELOCITY_THRESHOLD = 100;
 
             int forceX = 0;
             int forceY = 0;
