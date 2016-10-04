@@ -21,19 +21,19 @@ public class Box
 
     public Box ()
     {
-        this(0,0,0,0,Color.BLACK,0);
+        this(0,0,0,0,Color.BLACK,-1);
     }
     public Box (int _x, int _y)
     {
-        this(_x,_y,0,0,Color.BLACK,0);
+        this(_x,_y,0,0,Color.BLACK,-1);
     }
     public Box (int _x, int _y, int _width, int _height)
     {
-        this(_x,_y,_width,_height, Color.BLACK,0);
+        this(_x,_y,_width,_height, Color.BLACK,-1);
     }
     public Box (int _x, int _y, int _width, int _height, int _color)
     {
-        this(_x,_y,_width,_height,_color,0);
+        this(_x,_y,_width,_height,_color,-1);
     }
     public Box (int _x, int _y, int _width, int _height, int _color, int _number)
     {

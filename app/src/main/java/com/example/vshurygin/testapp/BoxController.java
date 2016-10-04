@@ -35,6 +35,9 @@ public class BoxController
     private GestureDetector mGD;
     private ScaleGestureDetector mSGD;
 
+    private boolean mLongPressStart = false;
+    private int mLongPressBoxNumber = -1;
+
     private boolean mForceFinished = true;
     private boolean mScrollRun = false;
     private long mForce = 0;
@@ -87,6 +90,13 @@ public class BoxController
         {
             mScrollRun = false;
             Log.d("Scroll",String.valueOf(mScrollRun));
+            if (mLongPressStart)
+            {
+                mLongPressStart = false;
+                Toast.makeText(mDrawBoxes.LocalContext,""+mLongPressBoxNumber,Toast.LENGTH_SHORT).show();
+                Log.d("Gesture", "End LongPress #"+ mLongPressBoxNumber);
+
+            }
             //if(mForce == 0)
             //{
                 //syncPositionWithRightReferenceCoord();
@@ -124,16 +134,6 @@ public class BoxController
             {
                 MovingBox LocalBox = MovingBoxPool.get(i);
 
-                /*if (Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.getX()) < Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.ThisPoint.x))
-                {
-                    LocalBox.setX(LocalBox.getX() + 1);
-                }
-                else if (Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.getX()) > Math.abs(LocalBox.ThisPoint.LastPoint.x - LocalBox.ThisPoint.x))
-                {
-                    LocalBox.setX(LocalBox.getX() - 1);
-                }
-                */
-
                 if ((LocalBox.getX() != LocalBox.ThisPoint.x)||(LocalBox.getY() != LocalBox.ThisPoint.y))
                 {
                     if (LocalBox.getX() > LocalBox.ThisPoint.x)
@@ -161,9 +161,10 @@ public class BoxController
     }
     private void forceMove()
     {
-        if (mForce == 0)
+        if (mForce == 30 || mForce == -30)
         {
             //syncPositionWithLeftReferenceCoord();
+            mForce = 0;
             mForceFinished = true;
         }
         else
@@ -172,6 +173,7 @@ public class BoxController
             {
                 mForceStepNumber--;
             }
+
             if (mForce > 0)
             {
                 for (int i = 0; i < mForceStepNumber; i++)
@@ -225,7 +227,8 @@ public class BoxController
         int box_width = Math.abs(boxsSpaceWidth / BOX_WIDTH_NUMBER);//ширина box'а
         int box_height = Math.abs(boxsSpaceHeight / BOX_HEIGHT_NUMBER);//высота box'а
 
-        int box_number = 1;
+        int box_numbers[] = {1,2,3,8,-1,4,7,6,5};
+        int box_number = 0;
 
         for (int i = 0; i < BOX_HEIGHT_NUMBER; i++)
         {
@@ -248,7 +251,9 @@ public class BoxController
                             j*(box_width+padding_step_w) + (padding_step_w + first_width_margin)
                             ,i*(box_height+padding_step_h) + (padding_step_h+first_height_margin)
                             ,box_width,box_height
-                            ,Color.RED));
+                            ,Color.RED,
+                            box_numbers[box_number]));
+                    box_number++;
                 }
                 else
                 {
@@ -257,7 +262,7 @@ public class BoxController
                             ,i*(box_height+padding_step_h) + (padding_step_h+first_height_margin)
                             ,box_width,box_height
                             ,Color.parseColor("#BDE0EB")
-                            ,box_number));
+                            ,box_numbers[box_number]));
                     box_number++;
                 }
                 mReferenceCoord[((i*BOX_HEIGHT_NUMBER + j)*2)] = j*(box_width+padding_step_w) + (padding_step_w + first_width_margin);
@@ -622,6 +627,21 @@ public class BoxController
     private class GestureListener extends GestureDetector.SimpleOnGestureListener
     {
         @Override
+        public boolean onSingleTapUp(MotionEvent _event)
+        {
+            Box localBox = findBox((int)_event.getX(),(int)_event.getY());
+            if (localBox != null)
+            {
+                Toast.makeText(mDrawBoxes.LocalContext,""+localBox.getNumber(),Toast.LENGTH_SHORT).show();
+                Log.d("Gesture", "Tap #"+localBox.getNumber());
+            }
+            else
+            {
+                Toast.makeText(mDrawBoxes.LocalContext,"Box not found!",Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        }
+        @Override
         public boolean onDown(MotionEvent _event)
         {
             mForce = 0;
@@ -633,11 +653,12 @@ public class BoxController
         @Override
         public void onLongPress(MotionEvent _event)
         {
-            //slideClockwise(100);
+            mLongPressStart = true;
             Box localBox = findBox((int)_event.getX(),(int)_event.getY());
             if (localBox != null)
             {
                 Toast.makeText(mDrawBoxes.LocalContext,""+localBox.getNumber(),Toast.LENGTH_SHORT).show();
+                mLongPressBoxNumber = localBox.getNumber();
                 Log.d("Gesture", "LongPress start #"+localBox.getNumber());
             }
             else

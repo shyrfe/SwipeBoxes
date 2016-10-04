@@ -244,8 +244,11 @@ public class DrawBoxes extends SurfaceView implements SurfaceHolder.Callback
             _paint.setStyle(Paint.Style.FILL);
             _paint.setTextSize(50);
             _paint.setTypeface(Typeface.MONOSPACE);
+            if (_box.getNumber() != -1)
+            {
+                CanvasBoxPattern.drawText(String.valueOf(_box.getNumber()),_box.getWidth()/2,_box.getHeight()/2,_paint);
+            }
 
-            CanvasBoxPattern.drawText(String.valueOf(_box.getNumber()),_box.getWidth()/2,_box.getHeight()/2,_paint);
 
             return bm;
         }
